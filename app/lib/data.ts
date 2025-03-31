@@ -1,6 +1,8 @@
 import postgres from "postgres";
 import { CourseCardProps } from "./definitions";
 
+// Viết SQL ở đây
+
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
 export const fetchCourses = async () => {
