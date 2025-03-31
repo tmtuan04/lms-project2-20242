@@ -13,6 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User Model
 model User {
   id String @id @default(uuid())
   name String?
@@ -29,12 +30,14 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+// Category Model
 model Category {
   id String @id @default(uuid())
   name String @unique
   courses Course[]
 }
 
+// Course Model
 model Course {
   id String @id @default(uuid())
   title String? @db.Text
@@ -45,6 +48,7 @@ model Course {
 
   description String? @db.Text
   imageUrl String? @db.Text
+  chapter Int?
   price Float?
   isPublished Boolean @default(false)
 
@@ -61,6 +65,7 @@ model Course {
   @@index([instructorId])
 }
 
+// CourseEnroll Model
 model CourseEnrollment {
   id String @id @default(uuid())
   userId String
@@ -76,6 +81,7 @@ model CourseEnrollment {
   @@index([courseId])
 }
 
+// Attachment Model
 model Attachment {
   id String @id @default(uuid())
   name String
