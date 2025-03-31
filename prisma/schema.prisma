@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id String @id @default(uuid())
+  name String?
+  email String @unique
+  authProvider String
+  isActive Boolean @default(true)
+  isInstructor Boolean @default(false)
+
+  // 1 người dùng có thể là giảng viên của nhiều khóa học
+  courses Course[] @relation("InstructorCourses")
+  enrollments CourseEnrollment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Category Model
+model Category {
+  id String @id @default(uuid())
+  name String @unique
+  courses Course[]
+}
+
+// Course Model
+model Course {
+  id String @id @default(uuid())
+  title String? @db.Text
+
+  instructorId String
+  // InstructorCourses là tên quan hệ để tránh nhầm lẫn
+  instructor User @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+
+  description String? @db.Text
+  imageUrl String? @db.Text
+  chapter Int?
+  price Float?
+  isPublished Boolean @default(false)
+
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  attachments Attachment[]
+  enrollments CourseEnrollment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([instructorId])
+}
+
+// CourseEnroll Model
+model CourseEnrollment {
+  id String @id @default(uuid())
+  userId String
+  courseId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+}
+
+// Attachment Model
+model Attachment {
+  id String @id @default(uuid())
+  name String
+  url String @db.Text
+
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+}
