@@ -93,6 +93,6 @@ async function seedCourses(count) {
   }
 }
 
-// seedUsers(10);
-// seedCategories();
-// seedCourses(3);
+seedUsers(10);
+seedCategories();
+seedCourses(3);

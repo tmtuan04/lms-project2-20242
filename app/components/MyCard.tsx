@@ -24,7 +24,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
           src={imageUrl}
           alt={title}
           fill
-          style={{ objectFit: "cover" }}
+           style={{ objectFit: "cover" }}
           className="rounded-lg"
         />
       </div>
