@@ -62,7 +62,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <div className="h-auto w-full grow "></div>
             </div>
 
-            {/* Thanh Top Nav */}
+            {/* Top Nav */}
             <div className="flex flex-col grow ">
                 <TopNav />
 
