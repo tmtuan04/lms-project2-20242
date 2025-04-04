@@ -15,5 +15,5 @@ export interface LessonProps {
     content: string
     order: number
     courseName: string
-    // courseId?: string
+    courseId: string
 }

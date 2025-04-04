@@ -1,9 +1,9 @@
 
-import SidebarMenu from "./_components/sidebar";
+import LessonContent from './_components/LessonContent';
 import { LessonProps } from '@/app/lib/definitions';
+import SidebarMenu from "./_components/sidebar";
 import TopNav from "./_components/topnav";
 
-// Fake data
 export const lessons: LessonProps[] = [
     {
         id: "lesson-1",
@@ -13,6 +13,7 @@ export const lessons: LessonProps[] = [
         videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
         isLocked: false,
         courseName: "IoT Fundamentals",
+        courseId: "048999d2-b571-4087-8dbf-4430cfe572e9",
     },
     {
         id: "lesson-2",
@@ -22,6 +23,7 @@ export const lessons: LessonProps[] = [
         videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
         isLocked: false,
         courseName: "IoT Fundamentals",
+        courseId: "048999d2-b571-4087-8dbf-4430cfe572e9",
     },
     {
         id: "lesson-3",
@@ -31,6 +33,7 @@ export const lessons: LessonProps[] = [
         videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
         isLocked: true,
         courseName: "IoT Fundamentals",
+        courseId: "048999d2-b571-4087-8dbf-4430cfe572e9",
     },
     {
         id: "lesson-4",
@@ -40,6 +43,7 @@ export const lessons: LessonProps[] = [
         videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
         isLocked: true,
         courseName: "IoT Fundamentals",
+        courseId: "048999d2-b571-4087-8dbf-4430cfe572e9",
     },
     {
         id: "lesson-5",
@@ -49,28 +53,50 @@ export const lessons: LessonProps[] = [
         videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
         isLocked: true,
         courseName: "IoT Fundamentals",
+        courseId: "048999d2-b571-4087-8dbf-4430cfe572e9",
     },
 ];
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+
+async function Page({ params }: {
+    params: { lessonID: string };
+}) {
+
+    const lessonId = (await params).lessonID.toString();
+
+    // const lessonId = Array.isArray(lessonIdArray) ? lessonIdArray.at(-1) : lessonIdArray;
+    const lesson = lessons.find((l) => l.id === lessonId);
+
+    // console.log("parrams", params.lessonID);
+    // console.log("lessonId", typeof lessonId);
+    // console.log("Type of params:", typeof params.lessonID);
+    // console.log("Found lesson:", lessons);
+
+    if (!lesson) {
+        return <div className='h-lvh'></div>;
+    }
 
 
     return (
-        <div className="flex flex-row">
-            <div className="flex flex-col  border-r-2 border-gray-300">
-                <SidebarMenu lessons={lessons} />
-                <div className="h-auto w-full grow "></div>
-            </div>
+        <>
+            <div className="flex flex-row">
+                <div className="flex flex-col  border-r-2 border-gray-300">
+                    <SidebarMenu lessons={lessons} />
+                    <div className="h-auto w-full grow "></div>
+                </div>
 
-            {/* Top Nav */}
-            <div className="flex flex-col grow ">
-                <TopNav />
-
-                {/* Nội dung các chương */}
-                <div className="flex-grow  scrollbar-none  ">
-                    {children}
+                {/* Top Nav */}
+                <div className="flex flex-col grow ">
+                    <TopNav />
+                    {/* Nội dung các chương */}
+                    <div className="flex-grow  scrollbar-none  ">
+                        <LessonContent lesson={lesson} />
+                    </div>
                 </div>
             </div>
-        </div>
-    )
+
+        </>
+    );
 }
+
+export default Page;

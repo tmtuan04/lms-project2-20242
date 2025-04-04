@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { LessonProps } from '@/app/lib/definitions';
 
 export default function SidebarMenu({ lessons }: { lessons: LessonProps[] }) {
-
     const pathname = usePathname();
 
     return (
@@ -18,7 +17,7 @@ export default function SidebarMenu({ lessons }: { lessons: LessonProps[] }) {
                 <Link
                     key={lesson.id}
                     // href={lesson.locked ? '#' : lesson.href}
-                    href={`/${lesson.id}`}
+                    href={`/${lesson.courseId}/${lesson.id}`}
                     className={clsx(
                         'flex grow  items-center gap-3 p-4  text-sm font-medium hover:bg-sky-200 hover:text-blue-600',
                         // lesson.locked
@@ -26,7 +25,7 @@ export default function SidebarMenu({ lessons }: { lessons: LessonProps[] }) {
                         //     : 'hover:bg-sky-200 hover:text-blue-600',
                         {
                             'bg-gray-100 text-black border-r-4 border-r-gray-600 border-2 border-gray-300'
-                                : pathname === `/${lesson.id}`
+                                : pathname === `/${lesson.courseId}/${lesson.id}`
                         }
                     )}
                 >
