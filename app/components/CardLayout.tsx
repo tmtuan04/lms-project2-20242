@@ -1,6 +1,6 @@
 import { fetchCourses } from "../lib/data";
 import { CourseCard } from "./MyCard";
-
+// import Link from "next/link";
 export default async function CardLayout() {
   const courses = await fetchCourses();
 
@@ -12,6 +12,9 @@ export default async function CardLayout() {
     <div className="flex justify-center p-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {courses.map((course) => (
+          // <Link
+          //   key={course.id}
+          //   href={`/${course.title}`}>
           <CourseCard
             id={course.id}
             key={course.id} // Nếu có id trong database, dùng để tối ưu React rendering
@@ -21,6 +24,7 @@ export default async function CardLayout() {
             chapter={course.chapter}
             price={course.price}
           />
+          // </Link>
         ))}
       </div>
     </div>
