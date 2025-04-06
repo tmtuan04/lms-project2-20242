@@ -40,6 +40,7 @@ model Category {
 // Course Model
 model Course {
   id String @id @default(uuid())
+  courseUrl String? @db.Text
   title String? @db.Text
 
   instructorId String

@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
-import { Search, ArrowDown } from "lucide-react";
+import { ArrowDown } from "lucide-react";
+import Search from "./Search";
 
 const HeroSection = () => {
   const handleScroll = () => {
@@ -18,27 +19,13 @@ const HeroSection = () => {
         Discover, Learn, Upskill with our wide range of courses
       </p>
 
-      {/* Search Box */}
       <div className="my-10 flex justify-center drop-shadow-sm">
-        <div className="relative">
-          <Search
-            size={18}
-            className="text-gray-500 absolute left-4 top-1/2 transform -translate-y-1/2"
-          />
-          <input
-            type="text"
-            placeholder="Search Courses"
-            className="w-140 px-4 py-2 pl-12 rounded-l-full text-gray-700 focus:outline-none bg-white"
-          />
-          <button className="bg-blue-600 px-4 py-2 rounded-r-full text-white cursor-pointer hover:bg-blue-800">
-            Search
-          </button>
-        </div>
+        <Search placeholder="Search courses here" />
       </div>
 
       {/* Explore Button */}
       <Button
-        className="bg-blue-600 mb-8 px-4 py-2 rounded-full text-white drop-shadow-xl"
+        className="bg-blue-600 mb-8 px-4 py-2 rounded-full text-white drop-shadow-xl transform transition duration-300 hover:scale-105 hover:shadow-lg"
         onClick={handleScroll} // Gọi hàm khi nhấn
       >
         Explore Courses <ArrowDown className="inline-flex" size={20} />
