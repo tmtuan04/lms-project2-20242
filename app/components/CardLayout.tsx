@@ -1,5 +1,4 @@
 import { fetchCourses } from "../lib/data";
-import { CourseCard } from "./CourseCard";
 import Card from "./Card";
 
 export default async function CardLayout() {

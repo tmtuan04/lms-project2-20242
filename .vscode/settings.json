@@ -1,3 +1,4 @@
 {
-    "commentTranslate.targetLanguage": "vi"
+    "commentTranslate.targetLanguage": "vi",
+    "commentTranslate.hover.enabled": true
 }

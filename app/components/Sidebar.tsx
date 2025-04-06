@@ -6,13 +6,16 @@ import {
   SignedIn,
   UserButton,
 } from "@clerk/nextjs";
+// import ModeToggle from "@/components/ModeToggle";
 
 const Sidebar = () => {
   return (
     <header className="flex justify-between items-center p-3 shadow-md bg-gray-100 sticky">
-      <HustLogo></HustLogo>
+      <HustLogo />
       
       <div className="flex gap-3">
+        {/* <ModeToggle /> */}
+
         <SignedOut>
           <div className="flex gap-2">
             <SignInButton>
