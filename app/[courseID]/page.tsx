@@ -5,7 +5,7 @@ export default async function CoursePage({
 }: {
     params: { courseID: string };
 }) {
-    const course = await params.courseID.toString();
+    const course = (await params).courseID;
 
     // Redirect đến lesson đầu tiên nếu tồn tại
     if (course) {

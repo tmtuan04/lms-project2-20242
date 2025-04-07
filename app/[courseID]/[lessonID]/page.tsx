@@ -62,7 +62,7 @@ async function Page({ params }: {
     params: { lessonID: string };
 }) {
 
-    const lessonId = (await params).lessonID.toString();
+    const lessonId = (await params).lessonID;
 
     // const lessonId = Array.isArray(lessonIdArray) ? lessonIdArray.at(-1) : lessonIdArray;
     const lesson = lessons.find((l) => l.id === lessonId);
@@ -73,7 +73,7 @@ async function Page({ params }: {
     // console.log("Found lesson:", lessons);
 
     if (!lesson) {
-        return <div className='h-lvh'></div>;
+        return <div className='h-lvh'>Error</div>;
     }
 
 

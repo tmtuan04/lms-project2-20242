@@ -19,12 +19,12 @@ export default function SidebarMenu({ lessons }: { lessons: LessonProps[] }) {
                     // href={lesson.locked ? '#' : lesson.href}
                     href={`/${lesson.courseId}/${lesson.id}`}
                     className={clsx(
-                        'flex grow  items-center gap-3 p-4  text-sm font-medium hover:bg-sky-200 hover:text-blue-600',
+                        'flex grow  items-center gap-3 p-4  text-sm font-medium hover:bg-sky-100 hover:text-blue-600',
                         // lesson.locked
                         //     ? 'text-gray-400 cursor-not-allowed'
                         //     : 'hover:bg-sky-200 hover:text-blue-600',
                         {
-                            'bg-gray-100 text-black border-r-4 border-r-gray-600 border-2 border-gray-300'
+                            'bg-sky-200 text-blue-600 border-r-4 border-r-blue-600 border-2 border-gray-300'
                                 : pathname === `/${lesson.courseId}/${lesson.id}`
                         }
                     )}
