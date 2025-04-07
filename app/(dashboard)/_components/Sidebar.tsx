@@ -1,28 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { FaTachometerAlt, FaGlobe } from "react-icons/fa";
+import { Menu, Compass } from "lucide-react";
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 h-screen p-3">
+    <aside className="w-64 bg-white border-r border-gray-200 h-screen">
       <nav>
-        <ul className="space-y-2">
+        <ul className="font-medium">
           <li>
             <Link
               href="/dashboard"
-              className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded"
+              className="flex items-center p-3 text-gray-700 hover:bg-gray-100 rounded"
             >
-              <FaTachometerAlt className="mr-2" />
+              <Menu className="mr-2" />
               Dashboard
             </Link>
           </li>
           <li>
             <Link
               href="/browse"
-              className="flex items-center p-2 text-blue-500 bg-blue-50 rounded"
+              className="flex items-center p-3 text-[#255C6E] bg-[#F2FBFF] rounded"
             >
-              <FaGlobe className="mr-2" />
+              <Compass className="mr-2 text-[#255C6E]" />
               Browse
             </Link>
           </li>
