@@ -1,65 +1,92 @@
-'use client';
-import { Card, Progress } from 'antd';
-import { BookOutlined } from '@ant-design/icons';
-import type { ProgressProps } from 'antd';
+import * as React from "react";
 
-// Định nghĩa kiểu dữ liệu cho props
-export interface Course {
-    title: string;
-    url: string;
-    progress: number;
-    tag: string;
-    chapter: number;
+import { cn } from "@/lib/utils";
+
+function Card({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card"
+      className={cn(
+        "bg-card text-card-foreground flex flex-col gap-3 rounded-xl border shadow-sm p-3",
+        className
+      )}
+      {...props}
+    />
+  );
 }
 
-interface MyCardProps {
-    course: Course;
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-header"
+      className={cn(
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        className
+      )}
+      {...props}
+    />
+  );
 }
-const conicColors: ProgressProps['strokeColor'] = {
-    '0%': 'oklch(0.586 0.253 17.585)',
-    '50%': 'oklch(0.546 0.245 262.881)',
-    '100%': 'oklch(0.723 0.219 149.579)',
+
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-title"
+      className={cn("leading-none font-semibold", className)}
+      {...props}
+    />
+  );
+}
+
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  );
+}
+
+function CardAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-action"
+      className={cn(
+        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-content"
+      className={cn(className)}
+      {...props}
+    />
+  );
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn("text-center mt-3", className)}
+      {...props}
+    />
+  );
+}
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
 };
-
-// const twoColors: ProgressProps['strokeColor'] = {
-//     '0%': '#108ee9',
-//     '100%': '#87d068',
-// };
-
-const MyCard: React.FC<MyCardProps> = ({ course }) => {
-    return (
-        <Card
-            style={{ width: 320, border: '2px solid #D3D3D3' }}
-            hoverable={true}
-            cover={
-                <img
-                    src={course.url}
-                    alt="background"
-                    width={300}
-                    height={200}
-                    style={{ objectFit: 'cover', height: 160, padding: 8, borderRadius: '16px' }}
-                />
-            }
-        >
-            <div className="flex flex-col -mt-5">
-                <p className="text-2xl">{course.title}</p>
-                <p className="font-light text-gray-700">{course.tag}</p>
-            </div>
-            <div className="mt-3">
-                <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200">
-                        <BookOutlined style={{ color: '#22c55e' }} />
-                    </div>
-                    <span>{course.chapter} chapter</span>
-                </div>
-
-                <span className="font-semibold text-green-500 flex justify-end">
-                    {course.progress}% Completed
-                </span>
-                <Progress percent={course.progress} strokeColor={conicColors} showInfo={course.progress === 100} />
-            </div>
-        </Card>
-    );
-};
-
-export default MyCard;

@@ -1,12 +1,33 @@
-import NavLinks from '@/app/(dashboard)/_components/nav-link';
+"use client";
 
-export default function SideNav() {
+import Link from "next/link";
+import { Menu, Compass } from "lucide-react";
+
+export default function Sidebar() {
   return (
-
-    <div className="flex h-full flex-col px-3 md:px-2 border-r-2 border-gray-300">
-      <div className="flex grow flex-row space-x-2 md:flex-col md:space-x-0 md:space-y-2 pt-2">
-        <NavLinks />
-      </div>
-    </div>
+    <aside className="w-64 bg-white border-r border-gray-200 h-screen">
+      <nav>
+        <ul className="font-medium">
+          <li>
+            <Link
+              href="/dashboard"
+              className="flex items-center p-3 text-gray-700 hover:bg-gray-100 rounded"
+            >
+              <Menu className="mr-2" />
+              Dashboard
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/browse"
+              className="flex items-center p-3 text-[#255C6E] bg-[#F2FBFF] rounded"
+            >
+              <Compass className="mr-2 text-[#255C6E]" />
+              Browse
+            </Link>
+          </li>
+        </ul>
+      </nav>
+    </aside>
   );
 }

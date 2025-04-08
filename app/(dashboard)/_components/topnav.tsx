@@ -1,7 +1,7 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import ModeToggle from "@/components/ui/toggle-theme";
 import { Search } from "lucide-react";
-import HustLogo from "@/components/ui/hust-logo";
+import HustLogo from "@/app/components/HustLogo";
 import Link from "next/link";
 export default function TopNav() {
   return (
