@@ -5,6 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function formatPrice(price: number) {
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " đ"
+}
+
 export const generatePagination = (currentPage: number, totalPages: number) => {
   // Tổng số trang <= 5 thì hiển thị tất cả các trang mà không có dấu ...
   if (totalPages <= 5) {

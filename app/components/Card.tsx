@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { formatPrice } from "@/lib/utils";
 import { CourseCardProps } from "../lib/definitions";
 
 const Card: React.FC<CourseCardProps> = ({
@@ -26,7 +27,7 @@ const Card: React.FC<CourseCardProps> = ({
       </Link>
       <div className="p-4">
         <Link href={courseUrl}>
-          <p className="mb-1 text-xl font-semibold tracking-tight text-[#4B4B4B] dark:text-white">
+          <p className="mb-1 text-lg font-semibold text-[#4B4B4B] dark:text-white leading-tight">
             {title}
           </p>
         </Link>
@@ -63,7 +64,7 @@ const Card: React.FC<CourseCardProps> = ({
             </svg>
           </Link>
           <label className="font-semibold text-[#4B4B4B] text-base">
-            {price} đ
+            {formatPrice(price)}
           </label>
         </div>
       </div>

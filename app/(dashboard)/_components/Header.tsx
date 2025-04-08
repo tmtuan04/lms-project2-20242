@@ -1,11 +1,17 @@
+"use client"
+
 import HustLogo from "@/app/components/HustLogo";
 import SearchBar from "./SearchBar";
 import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
 
 export default function Header() {
+    const { user } = useUser(); // Lấy thông tin user từ Clerk
+    console.log(user)
+
     return (
         <header className="flex items-center justify-between p-3 bg-white border-b border-gray-200">
-            <div className="flex w-4xl items-center">
+            <div className="flex w-[50rem] items-center">
                 <HustLogo />
                 <div className="flex-grow">
                     <SearchBar />
@@ -13,13 +19,12 @@ export default function Header() {
             </div>
 
             {/* Clerk Avatar */}
-            <div>
+            <div className="w-10 h-10 relative">
                 <Image
-                    src="/avatar.png"
+                    src={user?.imageUrl || "/avatar.png"}
                     alt="User Avatar"
-                    width={40}
-                    height={40}
-                    className="rounded-full"
+                    fill
+                    className="object-cover rounded-full"
                 />
             </div>
         </header>

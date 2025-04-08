@@ -1,4 +1,5 @@
 import HustLogo from "./HustLogo";
+import Link from "next/link";
 import {
   SignedOut,
   SignInButton,
@@ -6,16 +7,23 @@ import {
   SignedIn,
   UserButton,
 } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 // import ModeToggle from "@/components/ModeToggle";
 
 const Sidebar = () => {
   return (
-    <header className="flex justify-between items-center p-3 shadow-md bg-gray-100 sticky">
+    <header className="flex justify-between items-center p-3 shadow-md bg-gray-50 fixed z-100 w-full">
       <HustLogo />
-      
+
       <div className="flex gap-3">
         {/* <ModeToggle /> */}
-
+        <SignedIn>
+          <Link href="/dashboard">
+            <Button variant="outline" className="hover:bg-gray-200 hover:rounded-full transition">
+              Dashboard
+            </Button>
+          </Link>
+        </SignedIn>
         <SignedOut>
           <div className="flex gap-2">
             <SignInButton>

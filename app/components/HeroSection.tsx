@@ -7,13 +7,13 @@ import Search from "./Search";
 const HeroSection = () => {
   const handleScroll = () => {
     window.scrollBy({
-      top: window.innerHeight * 0.5, // Cuộn xuống 50% chiều cao màn hình
+      top: window.innerHeight * 0.4, // Cuộn xuống 50% chiều cao màn hình
       behavior: "smooth",
     });
   };
 
   return (
-    <section className="bg-[#789F60] bg-gradient-to-tr opacity-90 from-[#ff80b5] to-[#9089fc] text-white text-center">
+    <section className="bg-[#789F60] bg-gradient-to-tr opacity-90 from-[#ff80b5] to-[#9089fc] text-white text-center pt-16">
       <h1 className="text-4xl font-bold mt-8">Find the Best Courses for you</h1>
       <p className="font-light mt-2">
         Discover, Learn, Upskill with our wide range of courses

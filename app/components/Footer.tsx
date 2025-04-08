@@ -1,103 +1,98 @@
+"use client";
+
 import HustLogo from "./HustLogo";
+import Link from "next/link";
 
 const Footer = () => {
   return (
-    <footer className="bg-white dark:bg-gray-900 mt-5">
-      <div className="mx-auto w-full max-w-screen-xl p-2 py-6 lg:py-8">
-        <div className="md:flex md:justify-between">
+    <footer className="bg-white dark:bg-gray-900 mt-10 border-t">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="md:flex md:justify-between md:items-start">
+          {/* Logo */}
           <div className="mb-6 md:mb-0">
             <HustLogo />
-            {/* <a href="https://flowbite.com/" className="flex items-center">
-              <img
-                src="https://flowbite.com/docs/images/logo.svg"
-                className="h-8 me-3"
-                alt="FlowBite Logo"
-              />
-              <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-                Flowbite
-              </span>
-            </a> */}
           </div>
-          <div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3">
+
+          {/* Links */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 text-sm">
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
+              <h2 className="mb-4 font-semibold text-gray-900 uppercase dark:text-white">
                 Resources
               </h2>
-              <ul className="text-gray-500 dark:text-gray-400 font-medium">
-                <li className="mb-4">
-                  <a href="https://flowbite.com/" className="hover:underline">
-                    Flowbite
-                  </a>
+              <ul className="text-gray-500 dark:text-gray-400 space-y-2">
+                <li>
+                  <Link href="#" className="hover:underline">
+                    Documentation
+                  </Link>
                 </li>
                 <li>
-                  <a href="https://tailwindcss.com/" className="hover:underline">
-                    Tailwind CSS
-                  </a>
+                  <Link href="#" className="hover:underline">
+                    Tutorials
+                  </Link>
                 </li>
               </ul>
             </div>
+
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
-                Follow us
+              <h2 className="mb-4 font-semibold text-gray-900 uppercase dark:text-white">
+                Follow Us
               </h2>
-              <ul className="text-gray-500 dark:text-gray-400 font-medium">
-                <li className="mb-4">
-                  <a
-                    href="https://github.com/themesberg/flowbite"
-                    className="hover:underline "
-                  >
-                    Github
-                  </a>
+              <ul className="text-gray-500 dark:text-gray-400 space-y-2">
+                <li>
+                  <Link href="#" className="hover:underline">
+                    GitHub
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="https://discord.gg/4eeurUVvTy"
-                    className="hover:underline"
-                  >
-                    Discord
-                  </a>
+                  <Link href="#" className="hover:underline">
+                    LinkedIn
+                  </Link>
                 </li>
               </ul>
             </div>
+
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
+              <h2 className="mb-4 font-semibold text-gray-900 uppercase dark:text-white">
                 Legal
               </h2>
-              <ul className="text-gray-500 dark:text-gray-400 font-medium">
-                <li className="mb-4">
-                  <a href="#" className="hover:underline">
+              <ul className="text-gray-500 dark:text-gray-400 space-y-2">
+                <li>
+                  <Link href="#" className="hover:underline">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:underline">
-                    Terms &amp; Conditions
-                  </a>
+                  <Link href="#" className="hover:underline">
+                    Terms & Conditions
+                  </Link>
                 </li>
               </ul>
             </div>
           </div>
         </div>
-        <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
-        <div className="sm:flex sm:items-center sm:justify-between">
-          <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
+
+        <hr className="my-6 border-gray-200 dark:border-gray-700" />
+
+        <div className="sm:flex sm:items-center sm:justify-between text-center">
+          <span className="text-sm text-gray-500 dark:text-gray-400 block sm:inline">
             © 2025{" "}
-            <a href="https://flowbite.com/" className="hover:underline">
+            <Link href="#" className="hover:underline font-semibold">
               HustLMS™
-            </a>
+            </Link>
             . All Rights Reserved.
           </span>
-          <div className="flex mt-4 sm:justify-center sm:mt-0">
-            <a
+
+          <div className="flex justify-center mt-4 sm:mt-0 space-x-5">
+            <Link
               href="#"
               className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              aria-label="Facebook"
             >
               <svg
-                className="w-4 h-4"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
                 fill="currentColor"
                 viewBox="0 0 8 19"
+                aria-hidden="true"
               >
                 <path
                   fillRule="evenodd"
@@ -105,18 +100,17 @@ const Footer = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="sr-only">Facebook page</span>
-            </a>
-            <a
+            </Link>
+            <Link
               href="#"
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5"
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              aria-label="GitHub"
             >
               <svg
-                className="w-4 h-4"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
+                aria-hidden="true"
               >
                 <path
                   fillRule="evenodd"
@@ -124,8 +118,7 @@ const Footer = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="sr-only">GitHub account</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
