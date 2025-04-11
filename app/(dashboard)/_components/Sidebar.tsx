@@ -26,7 +26,7 @@ export default function Sidebar() {
               href="/dashboard"
               className="flex items-center p-4 text-gray-700 hover:bg-gray-100 rounded"
             >
-              <Menu className="mr-2" size={20}/>
+              <Menu className="mr-2" size={20} />
               Dashboard
             </Link>
           </li>
@@ -35,7 +35,7 @@ export default function Sidebar() {
               href="/browse"
               className="flex items-center p-4 text-[#255C6E] bg-[#F2FBFF] rounded"
             >
-              <Compass className="mr-2 text-[#255C6E]" size={20}/>
+              <Compass className="mr-2 text-[#255C6E]" size={20} />
               Browse
             </Link>
           </li>

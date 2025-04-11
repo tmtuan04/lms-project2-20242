@@ -23,6 +23,12 @@ const Sidebar = () => {
               Dashboard
             </Button>
           </Link>
+
+          <Link href="/courses">
+            <Button variant="outline" className="hover:bg-gray-200 hover:rounded-full transition">
+              Courses
+            </Button>
+          </Link>
         </SignedIn>
         <SignedOut>
           <div className="flex gap-2">
