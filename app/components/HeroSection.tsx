@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import Search from "./Search";
+import { Suspense } from "react";
 
 const HeroSection = () => {
   const handleScroll = () => {
@@ -20,7 +21,11 @@ const HeroSection = () => {
       </p>
 
       <div className="my-10 flex justify-center drop-shadow-sm">
-        <Search placeholder="Search courses here" />
+
+        <Suspense fallback={<div>Loading...</div>}>
+          <Search placeholder="Search courses here" />
+        </Suspense>
+
       </div>
 
       {/* Explore Button */}
