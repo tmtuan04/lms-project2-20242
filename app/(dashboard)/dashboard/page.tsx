@@ -1,7 +1,9 @@
+"use client";
+
 import Header from "../_components/Header";
 import Sidebar from "../_components/Sidebar";
 import CategoryTabs from "../_components/CategoryTabs";
-import MainContent from "../_components/MainContent";
+import DashboardStats from "../_components/DashboardStats";
 
 export default function Home() {
   return (
@@ -17,7 +19,9 @@ export default function Home() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
           <CategoryTabs />
-          <MainContent />
+          <div className="p-6">
+            <DashboardStats />
+          </div>
         </div>
       </div>
     </div>
