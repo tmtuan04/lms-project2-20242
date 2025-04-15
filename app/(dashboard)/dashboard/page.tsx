@@ -1,24 +1,10 @@
-import Header from "../_components/Header";
-import Sidebar from "../_components/Sidebar";
-import CategoryTabs from "../_components/CategoryTabs";
-import MainContent from "../_components/MainContent";
-
-export default function Home() {
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-      <Header />
-
-      {/* Main Layout */}
-      <div className="flex flex-1">
-        {/* Sidebar */}
-        <Sidebar />
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
-          <CategoryTabs />
-          <MainContent />
-        </div>
+    <div className="p-6">
+      <h1 className="text-2xl font-semibold text-gray-900">Dashboard Overview</h1>
+      <div className="mt-4">
+        {/* Thêm nội dung dashboard ở đây */}
+        <p className="text-gray-600">Welcome to your dashboard!</p>
       </div>
     </div>
   );

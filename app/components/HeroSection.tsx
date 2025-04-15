@@ -15,7 +15,7 @@ const HeroSection = () => {
   return (
     <section className="bg-[#789F60] bg-gradient-to-tr opacity-90 from-[#ff80b5] to-[#9089fc] text-white text-center pt-16">
       <h1 className="text-4xl font-bold mt-8">Find the Best Courses for you</h1>
-      <p className="font-light mt-2">
+      <p className="font-light mt-2 mx-1">
         Discover, Learn, Upskill with our wide range of courses
       </p>
 

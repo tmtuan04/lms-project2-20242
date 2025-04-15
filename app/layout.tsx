@@ -8,7 +8,10 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "HustLMS",
+  title: {
+    template: "%s | HustLMS",
+    default: "HustLMS" 
+  },
   description: "Learning Management System for HUST Students",
 };
 
