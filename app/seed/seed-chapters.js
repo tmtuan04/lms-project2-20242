@@ -71,3 +71,7 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+
+console.log(chapter1)
+console.log(chapter2)
+console.log(chapter3)
