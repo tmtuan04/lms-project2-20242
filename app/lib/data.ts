@@ -1,15 +1,46 @@
-'use server';
+"use server";
 
 import sql from "./db";
-import { CourseCardProps, CourseWithLessons, Lesson } from "./definitions";
+import {
+  CourseCardProps,
+  CourseWithLessons,
+  Lesson,
+  Category,
+} from "./definitions";
+
+// Check isInstructor
+export const checkIsInstructor = async (userId: string) => {
+  try {
+    const data = await sql<{ isInstructor: boolean }[]>`
+      SELECT 
+        u."isInstructor" 
+      FROM "User" u
+      WHERE u.id = ${userId}
+    `;
+
+    if (data.length === 0) {
+      return false;
+    }
+
+    return data[0].isInstructor;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to check instructor status.");
+  }
+};
 
 // Lấy danh sách các category
 export const fetchCategories = async () => {
-  const data = await sql<CourseCardProps[]>`
-    SELECT * FROM "Category"
+  try {
+    const data = await sql<Category[]>`
+    SELECT id, name FROM "Category"
     ORDER BY "name" DESC
   `;
-  return data;
+    return data;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch categories data.");
+  }
 };
 
 // Danh sách tất cả khóa học
@@ -31,11 +62,15 @@ export const fetchCourses = async (query?: string) => {
       LEFT JOIN "Chapter" ch ON ch."courseId" = c.id  -- Join với bảng Chapter
       WHERE 
         c."isPublished" = true
-        ${query ? sql`AND (
+        ${
+          query
+            ? sql`AND (
           LOWER(c.title) LIKE ${`%${query.toLowerCase()}%`} OR
           LOWER(u.name) LIKE ${`%${query.toLowerCase()}%`} OR
           LOWER(cat.name) LIKE ${`%${query.toLowerCase()}%`}
-        )` : sql``}
+        )`
+            : sql``
+        }
       GROUP BY c.id, c."courseUrl", c.title, cat.name, c.price, c."imageUrl", u.name
       ORDER BY c."createdAt" DESC
     `;
@@ -53,7 +88,7 @@ export const fetchCourses = async (query?: string) => {
 export async function fetchCourseById(courseId: string) {
   try {
     // Debug log
-    console.log("Fetching course with ID:", courseId);
+    // console.log("Fetching course with ID:", courseId);
 
     const course = await sql<CourseWithLessons[]>`
       SELECT 
@@ -94,7 +129,7 @@ export async function fetchCourseById(courseId: string) {
     `;
 
     // Debug log
-    console.log("Found course:", course);
+    // console.log("Found course:", course);
 
     if (!course || course.length === 0) {
       console.log("No course found");
@@ -103,8 +138,8 @@ export async function fetchCourseById(courseId: string) {
 
     return course[0];
   } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch course');
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch course");
   }
 }
 
@@ -126,7 +161,7 @@ export async function fetchChapterById(chapterId: string) {
     `;
     return chapter[0];
   } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch chapter');
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch chapter");
   }
 }

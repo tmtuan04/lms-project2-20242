@@ -1,3 +1,8 @@
+export interface Category {
+    id: string
+    name: string
+}
+
 export interface CourseCardProps {
     id: string
     instructor: string

@@ -30,8 +30,8 @@ export default function Sidebar() {
         <ul className="font-medium">
           {links.map((link) => {
             const isActive = pathname === link.href
-            console.log("pathname is", pathname)
-            console.log("link.href is", link.href)
+            // console.log("pathname is", pathname)
+            // console.log("link.href is", link.href)
             const Icon = link.icon
 
             return (

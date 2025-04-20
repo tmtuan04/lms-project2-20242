@@ -1,14 +1,13 @@
-// app/components/CardLayout.tsx
 import { fetchCourses } from "../lib/data";
 import Card from "./Card";
 
 export default async function CardLayout({
   searchParams,
 }: {
-  searchParams?: Promise<{ query?: string }>
+  searchParams?: Promise<{ query?: string }>; // Note the Promise type
 }) {
-  const params = await searchParams;
-  const query = params?.query || '';
+  const params = await searchParams; // Await the searchParams
+  const query = params?.query || ''; // Safely access query
   const courses = await fetchCourses(query);
 
   return (

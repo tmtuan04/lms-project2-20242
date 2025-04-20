@@ -1,4 +1,3 @@
-// app/page.tsx
 import CardLayout from "./components/CardLayout";
 import Footer from "./components/Footer";
 import HeroSection from "./components/HeroSection";
@@ -7,7 +6,7 @@ import Sidebar from "./components/Sidebar";
 export default function Page({
   searchParams,
 }: {
-  searchParams?: { query?: string };
+  searchParams?: Promise<{ query?: string }>; // Type as Promise
 }) {
   return (
     <main className="min-h-screen flex flex-col">

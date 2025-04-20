@@ -7,12 +7,8 @@ import { fetchCourses } from "@/app/lib/data";
 import Card from "@/app/components/Card";
 import clsx from "clsx";
 import { CourseCardProps } from "@/app/lib/definitions";
+import { Category } from "@/app/lib/definitions";
 
-// Ở đây test thôi, sau định nghĩa chung hết
-type Category = {
-  id: string;
-  name: string;
-};
 
 export default function Browse() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -53,7 +49,7 @@ export default function Browse() {
   };
 
   // Filter courses based on active categories
-  const filteredCourses = courses.filter(course => 
+  const filteredCourses = courses.filter(course =>
     activeCategories.length === 0 || activeCategories.includes(course.category)
   );
 

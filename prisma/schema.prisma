@@ -15,16 +15,17 @@ datasource db {
 
 // User Model
 model User {
-  id String @id @default(uuid())
-  name String?
-  email String @unique
-  imageUrl String? @db.Text
+  id           String  @id @default(uuid())
+  clerkId      String?  @unique
+  name         String?
+  email        String  @unique
+  imageUrl     String? @db.Text
   authProvider String
-  isActive Boolean @default(true)
+  isActive     Boolean @default(true)
   isInstructor Boolean @default(false)
 
   // 1 người dùng có thể là giảng viên của nhiều khóa học
-  courses Course[] @relation("InstructorCourses")
+  courses     Course[]           @relation("InstructorCourses")
   enrollments CourseEnrollment[]
 
   createdAt DateTime @default(now())
@@ -33,30 +34,30 @@ model User {
 
 // Category Model
 model Category {
-  id String @id @default(uuid())
-  name String @unique
+  id      String   @id @default(uuid())
+  name    String   @unique
   courses Course[]
 }
 
 // Course Model
 model Course {
-  id String @id @default(uuid())
+  id        String  @id @default(uuid())
   courseUrl String? @db.Text
-  title String? @db.Text // Có thể dùng cái này ở phần Objective?
+  title     String? @db.Text // Có thể dùng cái này ở phần Objective?
 
   instructorId String
   // InstructorCourses là tên quan hệ để tránh nhầm lẫn
-  instructor User @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  instructor   User   @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
 
   description String? @db.Text
-  imageUrl String? @db.Text
-  price Float?
+  imageUrl    String? @db.Text
+  price       Float?
   isPublished Boolean @default(false)
 
   categoryId String?
-  category Category? @relation(fields: [categoryId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
 
-  chapters Chapter[]
+  chapters    Chapter[]
   enrollments CourseEnrollment[]
 
   createdAt DateTime @default(now())
@@ -68,14 +69,14 @@ model Course {
 
 // Chapter (Mỗi khoá học có nhiều chapter)
 model Chapter {
-  id String @id @default(uuid())
-  title String
+  id          String  @id @default(uuid())
+  title       String
   description String? @db.Text
-  videoUrl String? @db.Text
-  isLocked Boolean @default(true)
+  videoUrl    String? @db.Text
+  isLocked    Boolean @default(true)
   // videoDuration Int?
-  courseId String
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   attachments ChapterAttachment[]
 
@@ -87,12 +88,12 @@ model Chapter {
 
 // ChapterAttachment Model
 model ChapterAttachment {
-  id String @id @default(uuid())
+  id   String @id @default(uuid())
   name String
-  url String @db.Text
+  url  String @db.Text
 
   chapterId String
-  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,11 +103,11 @@ model ChapterAttachment {
 
 // CourseEnroll Model
 model CourseEnrollment {
-  id String @id @default(uuid())
-  userId String
+  id       String @id @default(uuid())
+  userId   String
   courseId String
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
