@@ -1,11 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { Search as SearchIcon } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce"; // Tối ưu tìm kiếm bằng cách giảm số lần gọi API.
 
-export default function Search({ placeholder }: { placeholder: string }) {
+function SearchComponent({ placeholder }: { placeholder: string }) {
   // Lấy các tham số từ truy vấn hiện tại từ URL
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -49,5 +50,14 @@ export default function Search({ placeholder }: { placeholder: string }) {
       {/* Icon kính lúp đặt bên trái input */}
       <SearchIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
     </div>
+  );
+}
+
+// Wrapper bọc SearchComponent với Suspense
+export default function Search({ placeholder }: { placeholder: string }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchComponent placeholder={placeholder} />
+    </Suspense>
   );
 }
