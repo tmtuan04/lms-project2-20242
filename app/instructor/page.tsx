@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import CourseTable from "./coursesTable"
+import CourseTable from "./_components/coursesTable"
 import Header from "./_components/Header"
 import Sidebar from "./_components/SideBar"
 

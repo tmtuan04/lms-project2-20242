@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import DataTable from "./data-table";
-import { CourseTableData } from "./types/table";
-import UserForm from "./form";
-import { columns } from "./columns"
+import { CourseTableData } from "@/app/lib/definitions";
+import CreateCourseForm from "./ui/form";
+import { columns } from "./columns";
 import {
     Dialog,
     DialogContent,
@@ -40,8 +40,8 @@ export default function TablePage() {
         setIsDialogOpen(false);
     };
 
-    const handleUpdate = (updatedUser: CourseTableData) => {
-        setData(data.map((record) => (record.id === updatedUser.id ? updatedUser : record)));
+    const handleUpdate = (updatedCourse: CourseTableData) => {
+        setData(data.map((record) => (record.id === updatedCourse.id ? updatedCourse : record)));
         setIsDialogOpen(false);
         setEditingCourse(null);
     };
@@ -50,9 +50,9 @@ export default function TablePage() {
         setData(data.filter((record) => record.id !== id));
     };
 
-    const handlemultiDelete = (users: CourseTableData[]) => {
-        const userIds = new Set(users.map((record) => record.id));
-        setData(data.filter((record) => !userIds.has(record.id)));
+    const handlemultiDelete = (courses: CourseTableData[]) => {
+        const courseIds = new Set(courses.map((record) => record.id));
+        setData(data.filter((record) => !courseIds.has(record.id)));
     };
 
     const handleEdit = (record: CourseTableData) => {
@@ -75,7 +75,7 @@ export default function TablePage() {
                         </DialogDescription>
                     </DialogHeader>
                     <div>
-                        <UserForm
+                        <CreateCourseForm
                             onSubmit={editingCourse ? handleUpdate : handleCreate}
                             initialData={editingCourse}
                         />

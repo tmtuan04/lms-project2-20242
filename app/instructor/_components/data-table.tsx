@@ -1,7 +1,7 @@
 'use client';
 import * as React from "react"
 import { CirclePlus } from "lucide-react"
-import { DataTablePagination } from "./_components/ui/Pagination";
+import { DataTablePagination } from "./Pagination";
 import {
     ColumnDef,
     flexRender,
@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input"
 
 import { Button } from "@/components/ui/button"
 
-import { DataTableViewOptions } from "./_components/ui/ViewOptions"
+import { DataTableViewOptions } from "./ViewOptions"
 
 import {
     Table,

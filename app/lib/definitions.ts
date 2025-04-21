@@ -1,27 +1,27 @@
 export interface Category {
-    id: string
-    name: string
+  id: string
+  name: string
 }
 
 export interface CourseCardProps {
-    id: string
-    instructor: string
-    title: string
-    category: string
-    chaptersCount: number
-    price: number
-    imageUrl: string
+  id: string
+  instructor: string
+  title: string
+  category: string
+  chaptersCount: number
+  price: number
+  imageUrl: string
 }
 
 export interface LessonProps {
-    id: string
-    title: string
-    isLocked: boolean
-    videoUrl: string
-    content: string
-    order: number
-    courseName: string
-    courseId: string
+  id: string
+  title: string
+  isLocked: boolean
+  videoUrl: string
+  content: string
+  order: number
+  courseName: string
+  courseId: string
 }
 
 export interface Lesson {
@@ -54,4 +54,11 @@ export interface CourseWithLessons {
       url: string;
     }[];
   }[];
+}
+
+export interface CourseTableData {
+  id: string;
+  title: string;
+  price: number;
+  status: string;
 }

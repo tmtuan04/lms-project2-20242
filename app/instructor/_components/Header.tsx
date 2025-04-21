@@ -21,7 +21,7 @@ export default function Header() {
             {/* Clerk Avatar */}
             <div className='flex justify-end items-center gap-8 pr-2'>
                 {/* Exit */}
-                <Link href="/">
+                <Link href="/dashboard">
                     <button
                         className="group flex items-center gap-2 font-semibold text-gray-900 hover:text-red-600 cursor-pointer px-3 py-1 rounded-sm bg-gray-200"
                     >

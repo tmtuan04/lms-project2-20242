@@ -12,11 +12,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import { Checkbox } from "@/components/ui/checkbox"
-import { DataTableColumnHeader } from "./_components/ui/ColumnHeader"
+import { DataTableColumnHeader } from "./ColumnHeader"
 
-import { CourseTableData } from "./types/table";
-
-
+import { CourseTableData } from "@/app/lib/definitions";
 
 
 interface ColumnActions {
@@ -152,7 +150,7 @@ export const columns: ColumnDef<CourseTableData>[] = [
                         )}
                         {onDelete && (
                             <Button
-                                variant="outline"
+                                variant="destructive"
                                 size="sm"
                                 onClick={() => onDelete(course.id)}
                             >

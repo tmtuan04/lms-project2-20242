@@ -23,7 +23,7 @@ import {
     SelectValue
 } from "@/components/ui/select"
 
-import { CourseTableData } from "./types/table";
+import { CourseTableData } from "@/app/lib/definitions";
 
 const formSchema = z.object({
     id: z.string().optional(),
@@ -37,7 +37,7 @@ interface MyFormProps {
     initialData?: CourseTableData | null;
 }
 
-export default function MyForm({ onSubmit, initialData }: MyFormProps) {
+export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: initialData || {
@@ -95,7 +95,7 @@ export default function MyForm({ onSubmit, initialData }: MyFormProps) {
                                     <FormLabel>Price</FormLabel>
                                     <FormControl>
                                         <Input
-                                            placeholder="shadcn"
+                                            placeholder="Price"
 
                                             type="number"
                                             {...field} />
