@@ -27,10 +27,10 @@ export default function Sidebar() {
                 <ul className="font-normat">
                     <li>
                         <Link
-                            href="/courses"
+                            href="/instructor"
                             className={clsx(
                                 'flex items-center p-4 text-gray-700 hover:bg-gray-100 ',
-                                { 'bg-sky-200 text-blue-600 border-r-[3px] border-sky-600': pathname === "/courses", },
+                                { 'bg-sky-200 text-blue-600 border-r-[3px] border-sky-600': pathname === "/instructor", },
                             )}
                         >
                             <Menu className="mr-2" size={20} />
@@ -39,8 +39,11 @@ export default function Sidebar() {
                     </li>
                     <li>
                         <Link
-                            href="/analytics"
-                            className="flex items-center p-4 text-gray-700 hover:bg-gray-100 rounded"
+                            href="/instructor/analytics"
+                            className={clsx(
+                                'flex items-center p-4 text-gray-700 hover:bg-gray-100 ',
+                                { 'bg-sky-200 text-blue-600 border-r-[3px] border-sky-600': pathname === "/instructor/analytics", },
+                            )}
                         >
                             <ChartNoAxesCombined className="mr-2" size={20} />
                             Analytics
