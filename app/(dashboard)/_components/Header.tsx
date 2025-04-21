@@ -13,19 +13,19 @@ export default function Header() {
     const { user, isLoaded } = useUser(); // Lấy thông tin user từ Clerk
     const { isSignedIn } = useAuth();
     const router = useRouter();
-    const [isInstructor, setIsInstructor] = useState(false);
+    const [isInstructor, setIsInstructor] = useState(true);
 
-    useEffect(() => {
-        async function checkInstructorStatus() {
+    // useEffect(() => {
+    //     async function checkInstructorStatus() {
 
-            if (isLoaded && isSignedIn && user?.id) {
-                const status = await checkIsInstructor(user.id);
-                setIsInstructor(status);
-            }
-        }
+    //         if (isLoaded && isSignedIn && user?.id) {
+    //             const status = await checkIsInstructor(user.id);
+    //             setIsInstructor(status);
+    //         }
+    //     }
 
-        checkInstructorStatus();
-    }, [isLoaded, isSignedIn, user?.id, user]);
+    //     checkInstructorStatus();
+    // }, [isLoaded, isSignedIn, user?.id, user]);
 
     return (
         <header className="flex items-center justify-between p-3 bg-white border-b border-gray-200">
