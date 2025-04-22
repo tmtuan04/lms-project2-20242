@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@mermaid-js/mermaid-cli": "^11.4.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19.1.0",

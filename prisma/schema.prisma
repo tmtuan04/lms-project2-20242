@@ -13,10 +13,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  format = "png"
-}
+// generator erd {
+//   provider = "prisma-erd-generator"
+//   format = "png"
+// }
 
 // User Model
 model User {
