@@ -42,7 +42,7 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
         resolver: zodResolver(formSchema),
         defaultValues: initialData || {
             title: "",
-            status: "",
+            status: "Published",
             price: 0,
             id: "",
         },

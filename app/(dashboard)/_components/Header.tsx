@@ -14,6 +14,7 @@ export default function Header() {
     const { isSignedIn } = useAuth();
     const router = useRouter();
     const [isInstructor, setIsInstructor] = useState(false);
+    // const [isInstructor, setIsInstructor] = useState(true);
 
     useEffect(() => {
         async function checkInstructorStatus() {
