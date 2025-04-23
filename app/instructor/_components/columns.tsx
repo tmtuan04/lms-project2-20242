@@ -1,7 +1,7 @@
 'use client';
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, TableOfContents } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -86,119 +86,123 @@ export const columns: ColumnDef<CourseTableData>[] = [
         },
         accessorKey: "status",
     },
-    // {
-    //     id: "actions",
-    //     cell: ({ row, table }) => {
-    //         const course = row.original
-    //         const { onEdit, onDelete } = table.options.meta as ColumnActions;
-    //         return (
-    //             <DropdownMenu>
-    //                 <DropdownMenuTrigger asChild>
-    //                     <Button variant="ghost" className="h-8 w-8 p-0">
-    //                         <span className="sr-only">Open menu</span>
-    //                         <MoreHorizontal className="h-4 w-4" />
-    //                     </Button>
-    //                 </DropdownMenuTrigger>
-    //                 <DropdownMenuContent align="end">
-    //                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-    //                     <DropdownMenuSeparator />
-    //                     <DropdownMenuItem
-    //                         onClick={() => navigator.clipboard.writeText(course.id)}
-    //                     >
-    //                         Copy course ID
-    //                     </DropdownMenuItem>
-
-    //                     <DropdownMenuItem>View course details</DropdownMenuItem>
-    //                     {onEdit && <DropdownMenuItem onClick={() => onEdit(course)}>
-    //                         Edit
-    //                     </DropdownMenuItem>}
-
-    //                     {onDelete && <DropdownMenuItem onClick={() => onDelete(course.id)}>
-    //                         Delete
-    //                     </DropdownMenuItem>}
-    //                 </DropdownMenuContent>
-    //             </DropdownMenu>
-
-    //         )
-    //     },
-    // },
     {
         id: "actions",
         cell: ({ row, table }) => {
-            const course = row.original;
+            const course = row.original
             const { onEdit, onDelete } = table.options.meta as ColumnActions;
-
             return (
-                <>
-                    {/* Hiển thị nút trên màn hình lớn */}
-                    <div className="hidden lg:flex justify-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => console.log("View course details", course.id)}
-                        >
-                            View
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
                         </Button>
-                        {onEdit && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => onEdit(course)}
-                            >
-                                Edit
-                            </Button>
-                        )}
-                        {onDelete && (
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => onDelete(course.id)}
-                            >
-                                Delete
-                            </Button>
-                        )}
-                    </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {/* <DropdownMenuItem
+                            onClick={() => navigator.clipboard.writeText(course.id)}
+                        >
+                            Copy course ID
+                        </DropdownMenuItem> */}
 
-                    {/* Hiển thị dropdown trên màn hình nhỏ */}
-                    <div className="lg:hidden">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={() => navigator.clipboard.writeText(course.id)}
-                                >
-                                    Copy course ID
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>View course details</DropdownMenuItem>
-                                {onEdit && (
-                                    <DropdownMenuItem onClick={() => onEdit(course)}>
-                                        Edit
-                                    </DropdownMenuItem>
-                                )}
-                                {onDelete && (
-                                    <DropdownMenuItem onClick={() => onDelete(course.id)}>
-                                        Delete
-                                    </DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </>
-            );
+                        <DropdownMenuItem>
+                            <TableOfContents />
+                            View details</DropdownMenuItem>
+                        {onEdit && <DropdownMenuItem onClick={() => onEdit(course)}>
+                            <Pencil />
+                            Edit
+                        </DropdownMenuItem>}
 
+                        {onDelete && <DropdownMenuItem onClick={() => onDelete(course.id)}>
+                            <Trash2 />
+                            Delete
+                        </DropdownMenuItem>}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+            )
         },
-        header: () => (
-            <div className="hidden lg:flex justify-center">
-                <span>Actions</span>
-            </div>
-        ),
     },
+    // {
+    //     id: "actions",
+    //     cell: ({ row, table }) => {
+    //         const course = row.original;
+    //         const { onEdit, onDelete } = table.options.meta as ColumnActions;
+
+    //         return (
+    //             <>
+    //                 {/* Hiển thị nút trên màn hình lớn */}
+    //                 <div className="hidden lg:flex justify-center gap-2">
+    //                     <Button
+    //                         variant="outline"
+    //                         size="sm"
+    //                         onClick={() => console.log("View course details", course.id)}
+    //                     >
+    //                         View
+    //                     </Button>
+    //                     {onEdit && (
+    //                         <Button
+    //                             variant="outline"
+    //                             size="sm"
+    //                             onClick={() => onEdit(course)}
+    //                         >
+    //                             Edit
+    //                         </Button>
+    //                     )}
+    //                     {onDelete && (
+    //                         <Button
+    //                             variant="destructive"
+    //                             size="sm"
+    //                             onClick={() => onDelete(course.id)}
+    //                         >
+    //                             Delete
+    //                         </Button>
+    //                     )}
+    //                 </div>
+
+    //                 {/* Hiển thị dropdown trên màn hình nhỏ */}
+    //                 <div className="lg:hidden">
+    //                     <DropdownMenu>
+    //                         <DropdownMenuTrigger asChild>
+    //                             <Button variant="ghost" className="h-8 w-8 p-0">
+    //                                 <span className="sr-only">Open menu</span>
+    //                                 <MoreHorizontal className="h-4 w-4" />
+    //                             </Button>
+    //                         </DropdownMenuTrigger>
+    //                         <DropdownMenuContent align="end">
+    //                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+    //                             <DropdownMenuSeparator />
+    //                             <DropdownMenuItem
+    //                                 onClick={() => navigator.clipboard.writeText(course.id)}
+    //                             >
+    //                                 Copy course ID
+    //                             </DropdownMenuItem>
+    //                             <DropdownMenuItem>View course details</DropdownMenuItem>
+    //                             {onEdit && (
+    //                                 <DropdownMenuItem onClick={() => onEdit(course)}>
+    //                                     Edit
+    //                                 </DropdownMenuItem>
+    //                             )}
+    //                             {onDelete && (
+    //                                 <DropdownMenuItem onClick={() => onDelete(course.id)}>
+    //                                     Delete
+    //                                 </DropdownMenuItem>
+    //                             )}
+    //                         </DropdownMenuContent>
+    //                     </DropdownMenu>
+    //                 </div>
+    //             </>
+    //         );
+
+    //     },
+    //     header: () => (
+    //         <div className="hidden lg:flex justify-center">
+    //             <span>Actions</span>
+    //         </div>
+    //     ),
+    // },
 
 ]
