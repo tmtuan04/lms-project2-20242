@@ -5,18 +5,6 @@ import { Menu, ChartNoAxesCombined } from "lucide-react";
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 
-// Ở đây phải dùng clsx, chuyển sang map link thế này
-
-// const links = [
-//   { name: 'Home', href: '/dashboard', icon: HomeIcon },
-//   {
-//     name: 'Invoices',
-//     href: '/dashboard/invoices',
-//     icon: DocumentDuplicateIcon,
-//   },
-//   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
-// ];
-
 export default function Sidebar() {
 
     const pathname = usePathname();
