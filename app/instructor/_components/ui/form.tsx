@@ -25,11 +25,19 @@ import {
 
 import { CourseTableData } from "@/app/lib/definitions";
 
+
+interface FormData {
+    id?: string;
+    title: string;
+    status?: string;
+    price: number;
+}
+
 const formSchema = z.object({
-    id: z.string().optional(),
+    id: z.string().default(""),
     title: z.string().min(2, { message: "Title must be at least 2 characters" }),
-    status: z.string().optional(),
-    price: z.coerce.number(),
+    status: z.string().default("Published"),
+    price: z.number().min(0, { message: "Price must be a positive number" }), // Avoid coercion
 });
 
 interface MyFormProps {
@@ -38,7 +46,7 @@ interface MyFormProps {
 }
 
 export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps) {
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: initialData || {
             title: "",
@@ -48,7 +56,7 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
         },
     })
 
-    function handleSubmit(values: z.infer<typeof formSchema>) {
+    function handleSubmit(values: FormData) {
         try {
             onSubmit(values as CourseTableData)
             form.reset()
