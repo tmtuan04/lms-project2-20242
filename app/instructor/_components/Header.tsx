@@ -31,7 +31,7 @@ export default function Header() {
                 </Link>
 
                 {/* Avatar */}
-                <div className="w-10 h-10 relative">
+                <div className="w-8 h-8 relative">
                     <Image
                         src={user?.imageUrl || "/avatar.png"}
                         alt="User Avatar"
