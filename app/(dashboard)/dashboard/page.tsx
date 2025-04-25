@@ -78,23 +78,23 @@ export default function DashboardPage() {
 
       {/* Summary Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-8 py-3">
-        <div className="bg-white rounded-xl p-3 border flex gap-3 items-center h-20">
+        <div className="bg-white rounded-xl p-3 border flex gap-3 items-center h-16">
           <div className="bg-blue-200 rounded-full text-blue-600 ">
-            <Clock className=" m-2 h-8 w-8 bg-blue-200 rounded-full text-blue-600 " />
+            <Clock className=" m-2 h-4 w-4 bg-blue-200 rounded-full text-blue-600 " />
           </div>
           <div>
-            <p className="text-lg font-semibold">In Progress</p>
-            <p className="text-lg font-semibold text-gray-400">{inProgressCourses.length} Courses</p>
+            <p className="font-medium">In Progress</p>
+            <p className="text-sm font-medium text-gray-400">{inProgressCourses.length} Courses</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3 border flex flex-row gap-2 items-center h-20">
+        <div className="bg-white rounded-xl p-3 border flex flex-row gap-2 items-center h-16">
           <div className="bg-green-200 rounded-full text-green-600 ">
-            <CircleCheckBig className=" m-2 h-8 w-8" />
+            <CircleCheckBig className="m-2 h-4 w-4" />
           </div>
           <div>
-            <p className="text-lg font-semibold">Completed</p>
-            <p className="text-lg font-semibold text-gray-400">{completedCourses.length} Courses</p>
+            <p className="font-medium">Completed</p>
+            <p className="text-sm font-medium text-gray-400">{completedCourses.length} Courses</p>
           </div>
         </div>
       </div>
