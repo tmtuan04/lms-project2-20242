@@ -15,13 +15,13 @@ import {
 } from "@/components/ui/form"
 
 import { Input } from "@/components/ui/input"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select"
+// import {
+//     Select,
+//     SelectContent,
+//     SelectItem,
+//     SelectTrigger,
+//     SelectValue
+// } from "@/components/ui/select"
 
 import { CourseTableData } from "@/app/lib/definitions";
 
@@ -42,7 +42,7 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
         resolver: zodResolver(formSchema),
         defaultValues: initialData || {
             title: "",
-            status: "Published",
+            status: "Draft",
             price: 0,
             id: "",
         },
@@ -59,34 +59,29 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 max-w-3xl mx-auto py-4">
 
-                <div className="grid grid-cols-12 gap-4">
+                <div className="w-full">
+                    <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="my-1">Name</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="e.g. 'Advanced Web Development"
 
-                    <div className="col-span-6">
-
-                        <FormField
-                            control={form.control}
-                            name="title"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Title</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="Name Course"
-
-                                            type="text"
-                                            {...field} />
-                                    </FormControl>
-                                    <FormDescription>This is your public  name course.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    <div className="col-span-6">
-
+                                        type="text"
+                                        {...field} />
+                                </FormControl>
+                                <FormDescription className="text-sm">This is your public  name course. Don`t worry you can always change this later. </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                {/* <div className="col-span-6">
                         <FormField
                             control={form.control}
                             name="price"
@@ -105,14 +100,10 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
                                 </FormItem>
                             )}
                         />
-                    </div>
+                    </div> */}
 
-                </div>
-
-                <div className="grid grid-cols-12 gap-4">
-
+                {/* <div className="grid grid-cols-12 gap-4">
                     <div className="col-span-6">
-
                         <FormField
                             control={form.control}
                             name="status"
@@ -137,11 +128,9 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
                             )}
                         />
                     </div>
-
                     <div className="col-span-6">
                     </div>
-
-                </div>
+                </div> */}
                 <Button type="submit" className="px-4">{initialData ? "Update" : "Create"}</Button>
             </form>
         </Form>

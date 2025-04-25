@@ -29,11 +29,11 @@ export default function CourseTable({ fetchData }: CourseTableProps) {
         setIsDialogOpen(false);
     };
 
-    const handleUpdate = (updatedCourse: CourseTableData) => {
-        setData(data.map((record) => (record.id === updatedCourse.id ? updatedCourse : record)));
-        setIsDialogOpen(false);
-        setEditingCourse(null);
-    };
+    // const handleUpdate = (updatedCourse: CourseTableData) => {
+    //     setData(data.map((record) => (record.id === updatedCourse.id ? updatedCourse : record)));
+    //     setIsDialogOpen(false);
+    //     setEditingCourse(null);
+    // };
 
     const handleDelete = (id: string) => {
         setData(data.filter((record) => record.id !== id));
@@ -58,14 +58,14 @@ export default function CourseTable({ fetchData }: CourseTableProps) {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{editingCourse ? "Edit Course" : "Create New Course"}</DialogTitle>
+                        <DialogTitle>Create New Course</DialogTitle>
                         <DialogDescription>
-                            Please fill out the form below to {editingCourse ? "update the course" : "create a new course"}.
+                            Please fill out the form below to create a new course.
                         </DialogDescription>
                     </DialogHeader>
                     <div>
                         <CreateCourseForm
-                            onSubmit={editingCourse ? handleUpdate : handleCreate}
+                            onSubmit={handleCreate}
                             initialData={editingCourse}
                         />
                     </div>

@@ -17,14 +17,14 @@ export default function Header() {
             </div>
 
             {/* Clerk Avatar */}
-            <div className='flex justify-end items-center gap-6 pr-2'>
+            <div className='flex justify-end items-center gap-3'>
                 {/* Exit */}
                 <Link href="/dashboard">
                     <button
                         className="group flex items-center gap-2 font-medium text-gray-900 cursor-pointer px-3 py-1 rounded-sm hover:bg-gray-200"
                     >
-                        <LogOut size={16} className="group-hover:scale-110 transition" />
-                        <span>Exit</span>
+                        <LogOut size={14} className="group-hover:scale-110 transition" />
+                        <span className="text-sm">Exit</span>
                     </button>
                 </Link>
 

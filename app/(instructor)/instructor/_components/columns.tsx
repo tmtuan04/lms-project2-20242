@@ -1,7 +1,7 @@
 'use client';
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash2, TableOfContents } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -108,12 +108,12 @@ export const columns: ColumnDef<CourseTableData>[] = [
                             Copy course ID
                         </DropdownMenuItem> */}
 
-                        <DropdownMenuItem>
+                        {/* <DropdownMenuItem>
                             <TableOfContents />
-                            View details</DropdownMenuItem>
+                            View Details</DropdownMenuItem> */}
                         {onEdit && <DropdownMenuItem onClick={() => onEdit(course)}>
                             <Pencil />
-                            Edit
+                            Details
                         </DropdownMenuItem>}
 
                         {onDelete && <DropdownMenuItem onClick={() => onDelete(course.id)}>
