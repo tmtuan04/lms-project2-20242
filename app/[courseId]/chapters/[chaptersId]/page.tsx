@@ -1,6 +1,7 @@
 import { fetchCourseById } from "@/app/lib/data";
 import { redirect } from "next/navigation";
 import { type NextPage } from "next";
+import UploadVideoForm from "./upload-form";
 
 interface ChapterPageProps {
   params: Promise<{ courseId: string; chaptersId: string }>; // Type params as Promise
@@ -49,6 +50,8 @@ const ChapterPage: NextPage<ChapterPageProps> = async ({
               {firstChapter.description || "No description available."}
             </p>
 
+            <UploadVideoForm chapterId={firstChapter.id} courseId={courseId} />
+
             {firstChapter.attachments && firstChapter.attachments.length > 0 && (
               <div className="mt-4">
                 <h3 className="font-semibold mb-2">Attachments:</h3>
@@ -86,6 +89,8 @@ const ChapterPage: NextPage<ChapterPageProps> = async ({
           <p className="text-slate-600">
             {chapter.description || "No description available."}
           </p>
+
+          <UploadVideoForm chapterId={chapter.id} courseId={courseId} />
 
           {chapter.attachments && chapter.attachments.length > 0 && (
             <div className="mt-4">
