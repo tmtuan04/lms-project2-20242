@@ -1,10 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+// Component UI Table
 import DataTable from "./data-table";
 import { CourseTableData } from "@/app/lib/definitions";
+
+// Form để nhập khoá học mới?
 import CreateCourseForm from "./ui/form";
+
+// Cấu hình các cột cho DataTable
 import { columns } from "./columns";
+
+// shadCN UI
 import {
     Dialog,
     DialogContent,
@@ -18,39 +27,49 @@ interface CourseTableProps {
 }
 
 export default function CourseTable({ fetchData }: CourseTableProps) {
+    const router = useRouter();
+
     const [data, setData] = useState<CourseTableData[]>(fetchData);
-    const [editingCourse, setEditingCourse] = useState<CourseTableData | null>(null);
+    // const [editingCourse, setEditingCourse] = useState<CourseTableData | null>(null);
+
+    // Đóng mở form
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // id này sinh từ chiều dài của mảng, không phải là id thực tế của course
+    // Event Create Course
     const handleCreate = (newRecord: Omit<CourseTableData, "id">) => {
         const record = { ...newRecord, id: String(data.length + 1) };
-        setData([...data, record]);
+        setData([record, ...data]);
         setIsDialogOpen(false);
     };
 
+    // Event Update Course - Tạm thời đang cần sửa ở đây
     // const handleUpdate = (updatedCourse: CourseTableData) => {
     //     setData(data.map((record) => (record.id === updatedCourse.id ? updatedCourse : record)));
     //     setIsDialogOpen(false);
     //     setEditingCourse(null);
     // };
 
+    // Event Delete Course
     const handleDelete = (id: string) => {
         setData(data.filter((record) => record.id !== id));
     };
 
+    // Xoá nhiều khoá học - Khả năng không cần thiết
     const handlemultiDelete = (courses: CourseTableData[]) => {
         const courseIds = new Set(courses.map((record) => record.id));
         setData(data.filter((record) => !courseIds.has(record.id)));
     };
 
     const handleEdit = (record: CourseTableData) => {
-        setEditingCourse(record);
-        setIsDialogOpen(true);
+        router.push(`/instructor/edit/${record.id}`)
+
+        // setEditingCourse(record);
+        // setIsDialogOpen(true);
     };
 
+    // Mở dialog để tạo khóa học
     const openCreateDialog = () => {
-        setEditingCourse(null);
+        // setEditingCourse(null);
         setIsDialogOpen(true);
     };
     return (
@@ -66,7 +85,7 @@ export default function CourseTable({ fetchData }: CourseTableProps) {
                     <div>
                         <CreateCourseForm
                             onSubmit={handleCreate}
-                            initialData={editingCourse}
+                            // initialData={editingCourse}
                         />
                     </div>
                 </DialogContent>

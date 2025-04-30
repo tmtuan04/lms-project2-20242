@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export default function Header() {
     const { user } = useUser(); // Lấy thông tin user từ Clerk
-    console.log("User:", user);
+    // console.log("User:", user);
 
     return (
         <header className="flex items-center justify-between p-3 bg-white border-b border-gray-200">

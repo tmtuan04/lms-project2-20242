@@ -25,7 +25,7 @@ export default function Browse() {
           name: String(row.name)
         }));
         setCategories(transformedCategories);
-        if (transformedCategories.length > 0) setActiveCategories([transformedCategories[0].name]);
+        if (transformedCategories.length > 0) setActiveCategories([]);
 
         // Load courses
         const courseData = await fetchCourses();
