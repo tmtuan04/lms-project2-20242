@@ -6,7 +6,64 @@ import {
   CourseWithLessons,
   Lesson,
   Category,
+  UserCourseCardProps 
 } from "./definitions";
+
+
+export async function getInitUserCourseCards(): Promise<UserCourseCardProps[]> {
+  return [
+    {
+      id: "course-001",
+      instructor: "Nguyễn Văn A",
+      title: "Lập trình React cơ bản",
+      category: "Lập trình web",
+      chaptersCount: 16,
+      completedChaptersCount: 0,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+    {
+      id: "course-002",
+      instructor: "Trần Thị B",
+      title: "Thiết kế UI/UX chuyên sâu",
+      category: "Thiết kế",
+      chaptersCount: 12,
+      completedChaptersCount: 5,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+    {
+      id: "course-003",
+      instructor: "Lê Văn C",
+      title: "Python cho người mới bắt đầu",
+      category: "Lập trình",
+      chaptersCount: 20,
+      completedChaptersCount: 20,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+    {
+      id: "course-004",
+      instructor: "Lê Văn C",
+      title: "Python cho người mới bắt đầu",
+      category: "Lập trình",
+      chaptersCount: 20,
+      completedChaptersCount: 20,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+    {
+      id: "course-005",
+      instructor: "Lê Văn C",
+      title: "Python cho người mới bắt đầu",
+      category: "Lập trình",
+      chaptersCount: 20,
+      completedChaptersCount: 20,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+  ];
+}
 
 // Check isInstructor
 export const checkIsInstructor = async (userId: string) => {

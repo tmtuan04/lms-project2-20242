@@ -62,3 +62,13 @@ export interface CourseTableData {
   price: number;
   status: string;
 }
+
+export interface UserCourseCardProps {
+  id: string
+  instructor: string
+  title: string
+  category: string
+  chaptersCount: number
+  completedChaptersCount: number
+  imageUrl: string
+}
