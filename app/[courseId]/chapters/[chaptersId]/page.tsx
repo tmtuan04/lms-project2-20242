@@ -1,7 +1,7 @@
 import { fetchCourseById } from "@/app/lib/data";
 import { redirect } from "next/navigation";
 import { type NextPage } from "next";
-
+import MarkButton from "../../components/MarkButton"; // Import MarkButton component
 interface ChapterPageProps {
   params: Promise<{ courseId: string; chaptersId: string }>; // Type params as Promise
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>; // Type searchParams as Promise
@@ -82,7 +82,12 @@ const ChapterPage: NextPage<ChapterPageProps> = async ({
         </div>
 
         <div className="mt-4">
-          <h2 className="text-2xl font-bold mb-2">{chapter.title}</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold mb-2">{chapter.title}</h2>
+            {/* initalMarked = {chapter.isMark} */}
+            <MarkButton initialMarked={false} />
+          </div>
+          {/* <h2 className="text-2xl font-bold mb-2">{chapter.title}</h2> */}
           <p className="text-slate-600">
             {chapter.description || "No description available."}
           </p>

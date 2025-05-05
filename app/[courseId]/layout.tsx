@@ -1,7 +1,7 @@
 import { fetchCourseById } from "@/app/lib/data";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CreditCard } from "lucide-react";
+import { ArrowLeft, CreditCard, LogOut } from "lucide-react";
 import HustLogo from "../components/HustLogo";
 import Sidebar from "./components/Sidebar"; // Đã import Sidebar mới
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,15 @@ export default async function CourseLayout({
               {course.title} -{" "}
               <span className="hover:underline cursor-pointer">{course.instructor}</span>
             </h1>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <Link href="/dashboard">
+                <button
+                  className="group flex items-center gap-2 font-medium text-gray-900 cursor-pointer px-3 py-1 rounded-sm hover:bg-gray-200"
+                >
+                  <LogOut size={14} className="group-hover:scale-110 transition" />
+                  <span className="text-sm">Exit</span>
+                </button>
+              </Link>
               <Button variant="outline"><CreditCard />Enroll: 200.000 VND</Button>
             </div>
           </div>
