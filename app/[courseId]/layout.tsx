@@ -1,10 +1,10 @@
 import { fetchCourseById } from "@/app/lib/data";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CreditCard, LogOut } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 import HustLogo from "../components/HustLogo";
 import Sidebar from "./components/Sidebar"; // Đã import Sidebar mới
-import { Button } from "@/components/ui/button";
+import { EnrollButton } from "./components/EnrollButton";
 
 export default async function CourseLayout({
   children,
@@ -15,6 +15,9 @@ export default async function CourseLayout({
 }) {
   const resolvedParams = await params;
   const course = await fetchCourseById(resolvedParams.courseId);
+
+  // Log
+  // console.log(course);
 
   if (!course) {
     return redirect("/");
@@ -56,14 +59,14 @@ export default async function CourseLayout({
                   <span className="text-sm">Exit</span>
                 </button>
               </Link>
-              <Button variant="outline"><CreditCard />Enroll: 200.000 VND</Button>
+              <EnrollButton price={course.price} />
             </div>
           </div>
-        </div>
+        </div >
 
         {/* Main page content */}
-        <div className="pt-[70px]">{children}</div>
-      </div>
-    </div>
+        < div className="pt-[70px]" > {children}</div >
+      </div >
+    </div >
   );
 }
