@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useCallback } from "react";
 import { useDropzone } from 'react-dropzone';
+import { v4 as uuidv4 } from "uuid"
+import Link from "next/link";
 import Image from "next/image";
 
 import { TableOfContents, Upload, Image as ImageIcon } from "lucide-react"
@@ -17,18 +19,23 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
+type Chapter = {
+    id: string;
+    title: string;
+};
+
 export default function EditCoursePage() {
     // const { id } = useParams<{ id: string }>();
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
-    const [chapters, setChapters] = useState<string[]>([]);
+    const [chapters, setChapters] = useState<Chapter[]>([]);
 
     const handleAddChapter = () => {
-        setChapters([...chapters, "New Chapter"]);
+        const newChapter = { id: uuidv4(), title: "New Chapter" };
+        setChapters([...chapters, newChapter]);
     };
-
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
         if (file) {
@@ -116,9 +123,14 @@ export default function EditCoursePage() {
                                 {chapters.length === 0 ? "No chapters" : "Drag and drop to reorder chapters"}
                             </div>
                             <ul className="mt-2 space-y-1">
-                                {chapters.map((chapter, index) => (
-                                    <li key={index} className="p-2 mt-2 border rounded-md bg-gray-50 text-sm">
-                                        {chapter}
+                                {chapters.map((chapter) => (
+                                    <li key={chapter.id}>
+                                        <Link
+                                            href={`/instructor/edit/1/chapter/${chapter.id}`} // TODO: Thay 123 bằng dynamic course ID nếu có
+                                            className="block p-2 border rounded-md bg-gray-50 text-sm hover:bg-gray-100 transition"
+                                        >
+                                            {chapter.title}
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>

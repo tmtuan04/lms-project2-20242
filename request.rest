@@ -1,0 +1,8 @@
+POST http://localhost:3000/api/order
+Content-Type: application/json
+
+{
+    "amount": 2000000,
+    "customerName": "Tu Minh Tuan",
+    "customerEmail": "tuan@example.com"
+}
