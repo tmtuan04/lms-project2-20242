@@ -70,7 +70,7 @@ importers:
         version: 2.1.1
       learning-management-system:
         specifier: 'file:'
-        version: file:(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(prisma@6.6.0(typescript@5.8.3))(tailwindcss@4.1.1)(typescript@5.8.3)
+        version: file:(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(prisma@6.6.0(typescript@5.8.3))(tailwindcss@4.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.0))
       lucide-react:
         specifier: ^0.479.0
         version: 0.479.0(react@19.1.0)
@@ -122,6 +122,9 @@ importers:
       zod:
         specifier: ^3.24.3
         version: 3.24.3
+      zustand:
+        specifier: ^5.0.4
+        version: 5.0.4(@types/react@19.1.0)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -3576,6 +3579,24 @@ packages:
   zod@3.24.3:
     resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
 
+  zustand@5.0.4:
+    resolution: {integrity: sha512-39VFTN5InDtMd28ZhjLyuTnlytDr9HfwO512Ai4I8ZABCoyAj4F1+sr7sD1jP/+p7k77Iko0Pb5NhgBFDCX0kQ==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
@@ -6077,7 +6098,7 @@ snapshots:
     dependencies:
       language-subtag-registry: 0.3.23
 
-  learning-management-system@file:(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(prisma@6.6.0(typescript@5.8.3))(tailwindcss@4.1.1)(typescript@5.8.3):
+  learning-management-system@file:(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(prisma@6.6.0(typescript@5.8.3))(tailwindcss@4.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.0)):
     dependencies:
       '@ant-design/icons': 6.0.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@clerk/nextjs': 6.12.12(next@15.3.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -6116,6 +6137,7 @@ snapshots:
       uuid: 11.1.0
       vnpay: 2.2.0
       zod: 3.24.3
+      zustand: 5.0.4(@types/react@19.1.0)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))
     transitivePeerDependencies:
       - '@babel/core'
       - '@opentelemetry/api'
@@ -6126,12 +6148,14 @@ snapshots:
       - babel-plugin-react-compiler
       - date-fns
       - encoding
+      - immer
       - luxon
       - moment
       - prisma
       - sass
       - tailwindcss
       - typescript
+      - use-sync-external-store
 
   levn@0.4.1:
     dependencies:
@@ -7326,3 +7350,9 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zod@3.24.3: {}
+
+  zustand@5.0.4(@types/react@19.1.0)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)):
+    optionalDependencies:
+      '@types/react': 19.1.0
+      react: 19.1.0
+      use-sync-external-store: 1.5.0(react@19.1.0)

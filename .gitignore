@@ -42,3 +42,5 @@ next-env.d.ts
 
 # Others
 note.md
+zustand.md
+clerk.md
