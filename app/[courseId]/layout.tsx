@@ -14,10 +14,8 @@ export default async function CourseLayout({
   params: Promise<{ courseId: string }>;
 }) {
   const resolvedParams = await params;
-  const course = await fetchCourseById(resolvedParams.courseId);
 
-  // Log
-  // console.log(course);
+  const course = await fetchCourseById(resolvedParams.courseId);
 
   if (!course) {
     return redirect("/");
@@ -59,7 +57,7 @@ export default async function CourseLayout({
                   <span className="text-sm">Exit</span>
                 </button>
               </Link>
-              <EnrollButton price={course.price} />
+              <EnrollButton price={course.price} courseId={course.id} />
             </div>
           </div>
         </div >

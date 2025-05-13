@@ -1,43 +1,38 @@
 "use client";
 
 import HustLogo from "@/app/components/HustLogo";
-import Search from "@/app/components/Search";
+// import Search from "@/app/components/Search";
 import Image from "next/image";
-import { useUser, useAuth } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { checkIsInstructor } from "@/app/lib/data";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useUserStore } from "@/app/stores/useUserStore";
 
 export default function Header() {
-    const { user, isLoaded } = useUser(); // Lấy thông tin user từ Clerk
-    const { isSignedIn } = useAuth();
     const router = useRouter();
-    const [isInstructor, setIsInstructor] = useState(false);
-    // const [isInstructor, setIsInstructor] = useState(true);
+
+    const { userId } = useAuth(); // Lấy thông tin user từ Clerk
+
+    const user = useUserStore((s) => s.user)
+    const fetchUser = useUserStore((s) => s.fetchUser);
 
     useEffect(() => {
-        async function checkInstructorStatus() {
-
-            if (isLoaded && isSignedIn && user?.id) {
-                const status = await checkIsInstructor(user.id);
-                setIsInstructor(status);
-            }
+        if (userId) {
+            fetchUser(userId)
         }
-
-        checkInstructorStatus();
-    }, [isLoaded, isSignedIn, user?.id, user]);
+    }, [userId, fetchUser])
 
     return (
         <header className="flex items-center justify-between p-3 bg-white border-b border-gray-200">
             <div className="flex w-[50rem] items-center">
                 <HustLogo />
-                <div className="ml-32">
+                {/* <div className="ml-32">
                     <Search placeholder="Search courses here" />
-                </div>
+                </div> */}
             </div>
             <div className="flex items-center gap-4">
-                {isInstructor && (
+                {user?.isInstructor && (
                     <Button
                         onClick={() => router.push('/instructor')}
                         variant="outline"

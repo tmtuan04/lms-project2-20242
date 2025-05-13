@@ -1,4 +1,4 @@
-import { VNPay, ignoreLogger, HashAlgorithm, ProductCode, VnpLocale, ReturnQueryFromVNPay } from 'vnpay';
+import { VNPay, ignoreLogger, HashAlgorithm, ProductCode, VnpLocale, ReturnQueryFromVNPay, IpnUnknownError, IpnResponse } from 'vnpay';
 
 // console.log("vnpay.ts");
 // export {};
@@ -38,5 +38,5 @@ export const vnpay = new VNPay({
     }, // tùy chọn
 });
 
-export { ProductCode, VnpLocale };
-export type { ReturnQueryFromVNPay };
+export { ProductCode, VnpLocale, IpnUnknownError };
+export type { ReturnQueryFromVNPay, IpnResponse };
