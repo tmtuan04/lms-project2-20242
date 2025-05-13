@@ -6,9 +6,35 @@ import {
   CourseWithLessons,
   Lesson,
   Category,
-  UserCourseCardProps 
+  UserCourseCardProps,
+  CourseTableData,
 } from "./definitions";
 
+// List courses mà mình là instructor
+export async function getCoursesByInstructor(
+  instructorId: string
+): Promise<CourseTableData[]> {
+  try {
+    const data = await sql<
+      { id: string; title: string; price: number; isPublished: boolean }[]
+    >`
+      SELECT id, title, price, c."isPublished", c."createdAt"
+      FROM "Course" c
+      WHERE c."instructorId" = ${instructorId}
+      ORDER BY c."createdAt" DESC
+    `;
+
+    return data.map((row: { id: string; title: string; price: number; isPublished: boolean }) => ({
+      id: row.id,
+      title: row.title || 'Untitled Course',
+      price: row.price || 0,
+      status: row.isPublished ? 'Published' : 'Draft'
+    }));
+  } catch (error) {
+    console.error("Error fetch courses by instructor:", error);
+    throw new Error("Failed to fetch courses by instructor");
+  }
+}
 
 export async function getInitUserCourseCards(): Promise<UserCourseCardProps[]> {
   return [
@@ -65,7 +91,7 @@ export async function getInitUserCourseCards(): Promise<UserCourseCardProps[]> {
   ];
 }
 
-// Check isInstructor
+// Check isInstructor - Sau bỏ cái này đi
 export const checkIsInstructor = async (userId: string) => {
   try {
     const data = await sql<{ isInstructor: boolean }[]>`
@@ -138,8 +164,6 @@ export const fetchCourses = async (query?: string) => {
     throw new Error("Failed to fetch courses data.");
   }
 };
-
-// Các hàm khác giữ nguyên...
 
 // Sửa lại hàm fetchCourseById
 export async function fetchCourseById(courseId: string) {

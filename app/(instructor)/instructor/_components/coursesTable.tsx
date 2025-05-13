@@ -1,18 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
 // Component UI Table
 import DataTable from "./data-table";
 import { CourseTableData } from "@/app/lib/definitions";
-
 // Form để nhập khoá học mới?
 import CreateCourseForm from "./ui/form";
-
 // Cấu hình các cột cho DataTable
 import { columns } from "./columns";
-
 // shadCN UI
 import {
     Dialog,
@@ -29,7 +25,8 @@ interface CourseTableProps {
 export default function CourseTable({ fetchData }: CourseTableProps) {
     const router = useRouter();
 
-    const [data, setData] = useState<CourseTableData[]>(fetchData);
+    const [data, setData] = useState<CourseTableData[]>([]);
+
     // const [editingCourse, setEditingCourse] = useState<CourseTableData | null>(null);
 
     // Đóng mở form
@@ -72,6 +69,10 @@ export default function CourseTable({ fetchData }: CourseTableProps) {
         // setEditingCourse(null);
         setIsDialogOpen(true);
     };
+
+    useEffect(() => {
+        setData(fetchData);
+    }, [fetchData]);
     return (
         <>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

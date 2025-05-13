@@ -14,7 +14,7 @@ export default function ChapterDetailPage() {
 
     return (
         <div className="p-5 space-y-4">
-            <Link href="/instructor/edit/1"><div className="inline-flex items-center gap-2 hover:bg-gray-100 rounded-md p-1 cursor-pointer"><ArrowLeft size={16} />Back to course setup</div></Link>
+            <Link href="/instructor/edit/1"><div className="inline-flex items-center gap-2 hover:bg-gray-100 rounded-md p-1 cursor-pointer mb-2"><ArrowLeft size={16} />Back to course setup</div></Link>
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Chapter creation</h1>
                 <div className="flex gap-2">

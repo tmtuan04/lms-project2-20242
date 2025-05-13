@@ -60,7 +60,7 @@ export interface CourseTableData {
   id: string;
   title: string;
   price: number;
-  status: string;
+  status: 'Published' | 'Draft';
 }
 
 export interface UserCourseCardProps {
