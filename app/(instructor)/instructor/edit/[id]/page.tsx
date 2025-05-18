@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from "uuid"
 import Link from "next/link";
 import Image from "next/image";
-import { TableOfContents, Image as ImageIcon, Edit, CheckCircle, CircleX } from "lucide-react"
+import { TableOfContents, Image as ImageIcon, CheckCircle, Trash2, Pencil } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -16,38 +16,46 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useEditCourseStore } from "@/app/stores/editCourseStore";
+import { useState } from "react";
 
-type Chapter = {
-    id: string;
-    title: string;
-    isEditing?: boolean;
-};
+import { createCourse } from "@/app/lib/actions/coursesActions";
+import { useUserStore } from "@/app/stores/useUserStore";
 
 export default function EditCoursePage() {
-    // State cho từng trường
-    const [title, setTitle] = useState("");
-    const [titleConfirmed, setTitleConfirmed] = useState(false);
+    const user = useUserStore((s) => s.user)
 
-    const [description, setDescription] = useState("");
-    const [descriptionConfirmed, setDescriptionConfirmed] = useState(false);
+    // Get state and actions from store
+    const {
+        title,
+        titleConfirmed,
+        description,
+        descriptionConfirmed,
+        imagePreview,
+        imageConfirmed,
+        category,
+        categoryConfirmed,
+        price,
+        priceConfirmed,
+        chapters,
+        chaptersConfirmed,
+        setTitle,
+        setTitleConfirmed,
+        setDescription,
+        setDescriptionConfirmed,
+        setImagePreview,
+        setImageConfirmed,
+        setCategory,
+        setCategoryConfirmed,
+        setPrice,
+        setPriceConfirmed,
+        addChapter,
+        updateChapter,
+        deleteChapter,
+        setChaptersConfirmed,
+    } = useEditCourseStore();
 
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [imageConfirmed, setImageConfirmed] = useState(false);
-
-    const [chapters, setChapters] = useState<Chapter[]>([]);
-    const [chaptersConfirmed, setChaptersConfirmed] = useState(false);
-
-    const [category, setCategory] = useState("");
-    const [categoryConfirmed, setCategoryConfirmed] = useState(false);
-
-    const [price, setPrice] = useState("");
-    const [priceConfirmed, setPriceConfirmed] = useState(false);
-
-    // Thêm state để theo dõi trạng thái edit của từng trường
-    // const [isEditingTitle, setIsEditingTitle] = useState(false);
-    // const [isEditingDescription, setIsEditingDescription] = useState(false);
-    // const [isEditingCategory, setIsEditingCategory] = useState(false);
-    // const [isEditingPrice, setIsEditingPrice] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
     // Completed fields count
     const completedCount = [
@@ -65,9 +73,9 @@ export default function EditCoursePage() {
         if (file) {
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
-            setImageConfirmed(false); // reset confirm nếu đổi ảnh
+            setImageFile(file); // Lưu file gốc
         }
-    }, []);
+    }, [setImagePreview]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -79,33 +87,23 @@ export default function EditCoursePage() {
 
     // Chapter logic
     const handleAddChapter = () => {
-        setChapters([...chapters, { id: uuidv4(), title: "", isEditing: true }]);
-        setChaptersConfirmed(false);
+        addChapter({ id: uuidv4(), title: "", isEditing: true });
     };
 
     const handleChapterTitleChange = (id: string, value: string) => {
-        setChapters(chapters.map(chap =>
-            chap.id === id ? { ...chap, title: value } : chap
-        ));
-        setChaptersConfirmed(false);
+        updateChapter(id, { title: value });
     };
 
     const handleChapterEdit = (id: string) => {
-        setChapters(chapters.map(chap =>
-            chap.id === id ? { ...chap, isEditing: true } : chap
-        ));
-        setChaptersConfirmed(false);
+        updateChapter(id, { isEditing: true });
     };
 
     const handleChapterConfirm = (id: string) => {
-        setChapters(chapters.map(chap =>
-            chap.id === id ? { ...chap, isEditing: false } : chap
-        ));
+        updateChapter(id, { isEditing: false });
     };
 
     const handleChapterDelete = (id: string) => {
-        setChapters(chapters.filter(chap => chap.id !== id));
-        setChaptersConfirmed(false);
+        deleteChapter(id);
     };
 
     // Confirm chapters khi tất cả chapter đều có tên và không còn đang edit
@@ -139,6 +137,54 @@ export default function EditCoursePage() {
         }
     };
 
+    const handlePublish = async () => {
+        try {
+            if (!imageFile) {
+                alert("Chưa có ảnh!");
+                return;
+            }
+            if (!user?.id) {
+                alert("Chưa tìm thấy User!");
+                return;
+            }
+            // 1. Upload ảnh lên Cloudinary
+            const imageUrl = await uploadImageToCloudinary(imageFile);
+    
+            // 2. Lấy danh sách title của chapter
+            const chapterTitles = chapters.map((c) => c.title);
+    
+            // 3. Gọi server action tạo khoá học
+            await createCourse({
+                title,
+                description,
+                imageUrl,
+                price,
+                categoryId: "1ed53f03-4478-4bfa-b654-76182a588d5f",
+                chapters: chapterTitles,
+                instructorId: user?.id,
+            });
+    
+            alert("Tạo khoá học thành công!");
+        } catch (error) {
+            const err = error as Error
+            alert("Có lỗi khi tạo khoá học: " + err.message);
+        }
+    };
+
+    async function uploadImageToCloudinary(file: File) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        return data.secure_url; // Cloudinary trả về secure_url
+    }
+
     return (
         <div>
             <div className="bg-yellow-100 p-4 text-sm text-yellow-700">
@@ -150,10 +196,12 @@ export default function EditCoursePage() {
                     <div className="flex flex-col gap-1">
                         <h1 className="text-2xl font-bold">Course Setup</h1>
                         <p className="text-sm text-gray-800">
-                            Completed all fields ({completedCount}/5)
+                            Completed all fields ({completedCount}/6)
                         </p>
                     </div>
-                    <Button disabled={completedCount < 5}>Publish</Button>
+                    <Button disabled={completedCount < 6} onClick={handlePublish}>
+                        Publish
+                    </Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -162,7 +210,7 @@ export default function EditCoursePage() {
                         {/* Title */}
                         <div className="border p-4 rounded-md">
                             <div className="flex items-center justify-between mb-3">
-                                <h2 className="font-semibold">Course Title</h2>
+                                <h2 className="font-medium">Course Title</h2>
                                 <div className="flex gap-2">
                                     {titleConfirmed ? (
                                         <Button
@@ -170,7 +218,7 @@ export default function EditCoursePage() {
                                             size="sm"
                                             onClick={() => handleEdit('title')}
                                         >
-                                            <Edit />   Edit
+                                            <Pencil />   Edit
                                         </Button>
                                     ) : (
                                         <Button
@@ -186,19 +234,16 @@ export default function EditCoursePage() {
                             </div>
                             <Input
                                 value={title}
-                                onChange={e => {
-                                    setTitle(e.target.value);
-                                    setTitleConfirmed(false);
-                                }}
+                                onChange={e => setTitle(e.target.value)}
                                 placeholder="Course Title"
-                                className={titleConfirmed ? "font-semibold" : ""}
+                                className={titleConfirmed ? "font-medium" : ""}
                             />
                         </div>
 
                         {/* Description */}
                         <div className="border p-4 rounded-md">
                             <div className="flex items-center justify-between mb-3">
-                                <h2 className="font-semibold">Course Description</h2>
+                                <h2 className="font-medium">Course Description</h2>
                                 <div className="flex gap-2">
                                     {descriptionConfirmed ? (
                                         <Button
@@ -206,7 +251,7 @@ export default function EditCoursePage() {
                                             size="sm"
                                             onClick={() => handleEdit('description')}
                                         >
-                                            <Edit />    Edit
+                                            <Pencil />    Edit
                                         </Button>
                                     ) : (
                                         <Button
@@ -222,19 +267,16 @@ export default function EditCoursePage() {
                             </div>
                             <Textarea
                                 value={description}
-                                onChange={e => {
-                                    setDescription(e.target.value);
-                                    setDescriptionConfirmed(false);
-                                }}
+                                onChange={e => setDescription(e.target.value)}
                                 placeholder="Course Description"
-                                className={descriptionConfirmed ? "font-semibold" : ""}
+                                className={descriptionConfirmed ? "font-medium" : ""}
                             />
                         </div>
 
                         {/* Image */}
                         <div className="border p-4 rounded-md">
                             <div className="flex items-center justify-between mb-3">
-                                <h2 className="flex items-center gap-2 font-semibold">
+                                <h2 className="flex items-center gap-2 font-medium">
                                     <ImageIcon size={20} aria-hidden="true" />Course Image
                                 </h2>
                                 <div className="flex gap-2">
@@ -244,7 +286,7 @@ export default function EditCoursePage() {
                                             size="sm"
                                             onClick={() => handleEdit('image')}
                                         >
-                                            <Edit />     Edit
+                                            <Pencil />     Edit
                                         </Button>
                                     ) : (
                                         <Button
@@ -279,7 +321,7 @@ export default function EditCoursePage() {
                         {/* Chapters */}
                         <div className="border p-4 rounded-md">
                             <div className="flex items-center justify-between">
-                                <h2 className="flex items-center gap-2 font-semibold mb-2">
+                                <h2 className="flex items-center gap-2 font-medium mb-2">
                                     <TableOfContents size={20} /> Course Chapters
                                 </h2>
                                 <Button variant="outline" size="sm" onClick={handleAddChapter}>+ Add a chapter</Button>
@@ -304,7 +346,7 @@ export default function EditCoursePage() {
                                                     onClick={() => handleChapterConfirm(chapter.id)}
                                                     disabled={chapter.title.trim() === ""}
                                                 >
-                                                <CheckCircle />    Confirm
+                                                    <CheckCircle />    Confirm
                                                 </Button>
                                             </>
                                         ) : (
@@ -320,14 +362,14 @@ export default function EditCoursePage() {
                                                     size="sm"
                                                     onClick={() => handleChapterEdit(chapter.id)}
                                                 >
-                                                <Edit />    Edit
+                                                    <Pencil />
                                                 </Button>
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
                                                     onClick={() => handleChapterDelete(chapter.id)}
                                                 >
-                                                <CircleX />    Delete
+                                                    <Trash2 />
                                                 </Button>
                                             </>
                                         )}
@@ -341,14 +383,14 @@ export default function EditCoursePage() {
                                 onClick={() => setChaptersConfirmed(true)}
                                 disabled={!canConfirmChapters || chaptersConfirmed}
                             >
-                            <CheckCircle />    Confirm Chapters
+                                <CheckCircle />    Confirm Chapters
                             </Button>
                         </div>
 
                         {/* Category */}
                         <div className="border p-4 rounded-md">
                             <div className="flex items-center justify-between mb-2">
-                                <h2 className="font-semibold">Course Category</h2>
+                                <h2 className="font-medium">Course Category</h2>
                                 <div className="flex gap-2">
                                     {categoryConfirmed ? (
                                         <Button
@@ -356,7 +398,7 @@ export default function EditCoursePage() {
                                             size="sm"
                                             onClick={() => handleEdit('category')}
                                         >
-                                        <Edit />    Edit
+                                            <Pencil />    Edit
                                         </Button>
                                     ) : (
                                         <Button
@@ -365,19 +407,16 @@ export default function EditCoursePage() {
                                             onClick={() => setCategoryConfirmed(true)}
                                             disabled={!canConfirmCategory}
                                         >
-                                        <CheckCircle />    Confirm
+                                            <CheckCircle />    Confirm
                                         </Button>
                                     )}
                                 </div>
                             </div>
                             <Select
                                 value={category}
-                                onValueChange={value => {
-                                    setCategory(value);
-                                    setCategoryConfirmed(false);
-                                }}
+                                onValueChange={value => setCategory(value)}
                             >
-                                <SelectTrigger className={`w-full ${categoryConfirmed ? "font-semibold" : ""}`}>
+                                <SelectTrigger className={`w-full ${categoryConfirmed ? "font-medium" : ""}`}>
                                     <SelectValue placeholder="Select a category" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -391,7 +430,7 @@ export default function EditCoursePage() {
                         {/* Price */}
                         <div className="border p-4 rounded-md">
                             <div className="flex items-center justify-between mb-2">
-                                <h2 className="font-semibold">Course Price</h2>
+                                <h2 className="font-medium">Course Price (đ)</h2>
                                 <div className="flex gap-2">
                                     {priceConfirmed ? (
                                         <Button
@@ -399,7 +438,7 @@ export default function EditCoursePage() {
                                             size="sm"
                                             onClick={() => handleEdit('price')}
                                         >
-                                        <Edit />    Edit
+                                            <Pencil />    Edit
                                         </Button>
                                     ) : (
                                         <Button
@@ -408,18 +447,16 @@ export default function EditCoursePage() {
                                             onClick={() => setPriceConfirmed(true)}
                                             disabled={!canConfirmPrice}
                                         >
-                                        <CheckCircle />    Confirm
+                                            <CheckCircle />    Confirm
                                         </Button>
+
                                     )}
                                 </div>
                             </div>
                             <Input
-                                className={`w-30 ${priceConfirmed ? "font-semibold" : ""}`}
+                                className={`w-30 ${priceConfirmed ? "font-medium" : ""}`}
                                 value={price}
-                                onChange={e => {
-                                    setPrice(e.target.value);
-                                    setPriceConfirmed(false);
-                                }}
+                                onChange={e => setPrice(e.target.value)}
                                 placeholder="e.g. 200,000"
                             />
                         </div>

@@ -26,12 +26,19 @@ export async function getCoursesByInstructor(
       ORDER BY c."createdAt" DESC
     `;
 
-    return data.map((row: { id: string; title: string; price: number; isPublished: boolean }) => ({
-      id: row.id,
-      title: row.title || 'Untitled Course',
-      price: row.price || 0,
-      status: row.isPublished ? 'Published' : 'Draft'
-    }));
+    return data.map(
+      (row: {
+        id: string;
+        title: string;
+        price: number;
+        isPublished: boolean;
+      }) => ({
+        id: row.id,
+        title: row.title || "Untitled Course",
+        price: row.price || 0,
+        status: row.isPublished ? "Published" : "Draft",
+      })
+    );
   } catch (error) {
     console.error("Error fetch courses by instructor:", error);
     throw new Error("Failed to fetch courses by instructor");
@@ -296,12 +303,9 @@ export const fetchCourses = async (query?: string) => {
   }
 };
 
-// Sửa lại hàm fetchCourseById
+// fetchCourseById
 export async function fetchCourseById(courseId: string) {
   try {
-    // Debug log
-    // console.log("Fetching course with ID:", courseId);
-
     const course = await sql<CourseWithLessons[]>`
       SELECT 
         c.id,
@@ -340,9 +344,6 @@ export async function fetchCourseById(courseId: string) {
       GROUP BY c.id, c.title, c.description, c.price, c."imageUrl", u.name
     `;
 
-    // Debug log
-    // console.log("Found course:", course);
-
     if (!course || course.length === 0) {
       console.log("No course found");
       return null;
@@ -375,5 +376,49 @@ export async function fetchChapterById(chapterId: string) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch chapter");
+  }
+}
+
+// Kiểm tra trạng thái mua khóa học của người dùng
+type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
+
+export async function checkUserCourseAccess(
+  userId: string,
+  courseId: string
+): Promise<{
+  hasAccess: boolean;
+  isEnrolled: boolean;
+  paymentStatus?: PaymentStatus;
+}> {
+  try {
+    // Kiểm tra enrollment
+    const enrollment = await sql<{ id: string }[]>`
+      SELECT id 
+      FROM "CourseEnrollment"
+      WHERE "userId" = ${userId} 
+      AND "courseId" = ${courseId}
+    `;
+
+    // Kiểm tra payment status
+    const payment = await sql<{ status: PaymentStatus }[]>`
+      SELECT status
+      FROM "Payment"
+      WHERE "userId" = ${userId}
+      AND "courseId" = ${courseId}
+      ORDER BY "createdAt" DESC
+      LIMIT 1
+    `;
+
+    return {
+      hasAccess:
+        enrollment.length > 0 &&
+        payment.length > 0 &&
+        payment[0].status === "SUCCESS",
+      isEnrolled: enrollment.length > 0,
+      paymentStatus: payment[0]?.status,
+    };
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to check user course access");
   }
 }
