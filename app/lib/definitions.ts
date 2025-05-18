@@ -72,3 +72,16 @@ export interface UserCourseCardProps {
   completedChaptersCount: number
   imageUrl: string
 }
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  image_url: string;
+  amount: number;
+}
+
+export interface RevenueChartData {
+  month: string
+  venenue: number
+}

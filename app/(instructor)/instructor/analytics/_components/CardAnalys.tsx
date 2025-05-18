@@ -1,7 +1,9 @@
-
-
+'use client'
+import { useEffect, useState } from 'react';
+import { useUserStore } from '@/app/stores/useUserStore';
 import { CircleDollarSign, UsersRound, Inbox, FileText } from 'lucide-react';
-
+import { fetchCardAnalys } from '@/app/lib/data';
+import { RefreshCcw } from 'lucide-react';
 
 const iconMap = {
     sales: CircleDollarSign,
@@ -10,27 +12,46 @@ const iconMap = {
     invoices: Inbox,
 };
 
-export default async function CardAnalys() {
-    const {
-        numberOfInvoices,
-        numberOfCustomers,
-        totalPaidInvoices,
-        numberofCourses,
-    } = {
-        numberOfInvoices: 300,
-        numberOfCustomers: 110,
-        totalPaidInvoices: 120000000,
-        numberofCourses: 30,
-    };
+export default function CardAnalys() {
+    const [totalPaidInvoices, setTotalPaidInvoices] = useState(0);
+    const [numberofCourses, setNumberofCourses] = useState(0);
+    const [numberOfCustomers, setNumberofCustomers] = useState(0);
+    const [numberOfInvoices, setNumberOfInvoices] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const user = useUserStore((state) => state.user)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (user?.id) {
+                setIsLoading(true);
+                const { courseCount, customerCount, invoiceCount, totalPaidInvoices } = await fetchCardAnalys(user.id);
+                setNumberofCourses(courseCount);
+                setNumberofCustomers(customerCount);
+                setNumberOfInvoices(invoiceCount);
+                setTotalPaidInvoices(totalPaidInvoices);
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, [user?.id]);
+
 
     return (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 ">
-            <Card title="Total Sales" value={totalPaidInvoices} type="sales" />
-            <Card title="Total Courses" value={numberofCourses} type="courses" />
-            <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
+            <Card title="Total Sales" value={isLoading
+                ? <RefreshCcw className="animate-spin" />
+                : totalPaidInvoices} type="sales" />
+            <Card title="Total Courses" value={isLoading
+                ? <RefreshCcw className="animate-spin" />
+                : numberofCourses} type="courses" />
+            <Card title="Total Invoices" value={isLoading
+                ? <RefreshCcw className="animate-spin" />
+                : numberOfInvoices} type="invoices" />
             <Card
                 title="Total Customers"
-                value={numberOfCustomers}
+                value={isLoading
+                    ? <RefreshCcw className="animate-spin" />
+                    : numberOfCustomers}
                 type="customers"
             />
         </div>
@@ -43,7 +64,7 @@ export function Card({
     type,
 }: {
     title: string;
-    value: number | string;
+    value: number | string | React.ReactNode;
     type: 'invoices' | 'customers' | 'courses' | 'sales';
 }) {
     const Icon = iconMap[type];
