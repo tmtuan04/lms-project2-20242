@@ -49,6 +49,7 @@ export default async function CourseLayout({
               <span className="hover:underline cursor-pointer">{course.instructor}</span>
             </h1>
             <div className="ml-auto flex items-center gap-2">
+              <EnrollButton price={course.price} courseId={course.id} />
               <Link href="/dashboard">
                 <button
                   className="group flex items-center gap-2 font-medium text-gray-900 cursor-pointer px-3 py-1 rounded-sm hover:bg-gray-200"
@@ -57,7 +58,6 @@ export default async function CourseLayout({
                   <span className="text-sm">Exit</span>
                 </button>
               </Link>
-              <EnrollButton price={course.price} courseId={course.id} />
             </div>
           </div>
         </div >

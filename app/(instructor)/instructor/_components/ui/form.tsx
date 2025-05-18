@@ -50,7 +50,10 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
 
     function handleSubmit(values: z.infer<typeof formSchema>) {
         try {
-            onSubmit(values as CourseTableData)
+            onSubmit(values as CourseTableData);
+
+            // Lưu tên khóa học vào localStorage
+            localStorage.setItem("lastCreatedCourseTitle", values.title)
             form.reset()
         } catch (error) {
             console.error("Form submission error", error)
