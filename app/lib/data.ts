@@ -111,9 +111,9 @@ export async function getRecentCustomer(
 ): Promise<Customer[]> {
   try {
     const data = await sql<
-      { id: string; name: string; email: string; image_url: string; amount: number }[]
+      { id: string; name: string; email: string; image_url: string; amount: number; course_title: string }[]
     >`
-      SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, p."amount"::NUMERIC
+      SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, p."amount"::NUMERIC, c."title" AS course_title
       FROM "Payment" p
       JOIN "User" u ON p."userId" = u.id
       JOIN "Course" c ON p."courseId" = c.id
@@ -122,11 +122,12 @@ export async function getRecentCustomer(
       LIMIT 4
     `;
 
-    return data.map((row: { id: string; name: string; email: string; image_url: string; amount: number }) => ({
+    return data.map((row: { id: string; name: string; email: string; image_url: string; amount: number; course_title: string }) => ({
       id: row.id,
       name: row.name || 'Anomymous',
       amount: row.amount || 0,
       email: row.email || '',
+      course_title: row.course_title || '',
       image_url: row.image_url || 'https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_hybrid&w=740',
     }));
 

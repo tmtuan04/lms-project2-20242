@@ -69,14 +69,14 @@ type Chapter = {
   title: string;
   isEditing?: boolean;
   video?: {
-      file: File | null;
-      url: string;
-      preview: string;
+    file: File | null;
+    url: string;
+    preview: string;
   };
   documents?: {
-      name: string;
-      type: string;
-      url: string;
+    name: string;
+    type: string;
+    url: string;
   }[];
   accessMode?: 'locked' | 'free';
 }
@@ -201,6 +201,7 @@ export interface Customer {
   email: string;
   image_url: string;
   amount: number;
+  course_title: string;
 }
 
 export interface RevenueChartData {

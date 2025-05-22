@@ -67,33 +67,36 @@ export default function RecentCustomers() {
                             <div
                                 key={invoice.id}
                                 className={clsx(
-                                    'flex flex-row items-center justify-between py-4',
+                                    'flex flex-col',
                                     { 'border-t': i !== 0 }
                                 )}
                             >
-                                <div className="flex items-center">
-                                    <Image
-                                        src={invoice.image_url}
-                                        alt={`${invoice.name}'s profile picture`}
-                                        className="mr-4 rounded-full"
-                                        width={32}
-                                        height={32}
-                                    />
-                                    <div className="min-w-0">
-                                        <p className="truncate text-sm font-semibold md:text-base">
-                                            {invoice.name}
-                                        </p>
-                                        <p className="hidden text-sm text-gray-500 sm:block">
-                                            {invoice.email}
-                                        </p>
+                                <div className='flex py-1 text-gray-700 items-center'>{invoice.course_title}</div>
+                                <div className='flex flex-row items-center justify-between pb-4'>
+                                    <div className="flex items-center">
+                                        <Image
+                                            src={invoice.image_url}
+                                            alt={`${invoice.name}'s profile picture`}
+                                            className="mr-4 rounded-full"
+                                            width={32}
+                                            height={32}
+                                        />
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-semibold md:text-base">
+                                                {invoice.name}
+                                            </p>
+                                            <p className="hidden text-sm text-gray-500 sm:block">
+                                                {invoice.email}
+                                            </p>
+                                        </div>
                                     </div>
+                                    <p className="truncate text-sm font-medium md:text-base">
+                                        {new Intl.NumberFormat("vi-VN", {
+                                            style: "currency",
+                                            currency: "VND",
+                                        }).format(Number(invoice.amount))}
+                                    </p>
                                 </div>
-                                <p className="truncate text-sm font-medium md:text-base">
-                                    {new Intl.NumberFormat("vi-VN", {
-                                        style: "currency",
-                                        currency: "VND",
-                                    }).format(Number(invoice.amount))}
-                                </p>
                             </div>
                         );
                     })}
