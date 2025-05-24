@@ -8,6 +8,8 @@ import Link from "next/link";
 import { Save, Video, Pencil, Eye, Trash2, ArrowLeft, FileText, Image as ImageIcon, Upload, Link as LinkIcon, Edit, CheckCircle, Link as LinkIconLucide } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { useEditChapterStore } from "@/app/stores/editChapterStore";
+// import { useParams } from 'next/navigation';
+// import { useMemo } from 'react';
 
 export default function ChapterDetailPage() {
     // Get state and actions from store

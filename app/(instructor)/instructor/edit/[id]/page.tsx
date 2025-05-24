@@ -24,6 +24,7 @@ import { useUserStore } from "@/app/stores/useUserStore";
 
 export default function EditCoursePage() {
     const user = useUserStore((s) => s.user)
+    const resetStore = useEditCourseStore((s) => s.resetStore);
 
     // Get state and actions from store
     const {
@@ -149,10 +150,10 @@ export default function EditCoursePage() {
             }
             // 1. Upload ảnh lên Cloudinary
             const imageUrl = await uploadImageToCloudinary(imageFile);
-    
+
             // 2. Lấy danh sách title của chapter
             const chapterTitles = chapters.map((c) => c.title);
-    
+
             // 3. Gọi server action tạo khoá học
             await createCourse({
                 title,
@@ -163,8 +164,10 @@ export default function EditCoursePage() {
                 chapters: chapterTitles,
                 instructorId: user?.id,
             });
-    
             alert("Tạo khoá học thành công!");
+            // Reset store và xóa localStorage persist
+            resetStore();
+            localStorage.removeItem('course-storage');
         } catch (error) {
             const err = error as Error
             alert("Có lỗi khi tạo khoá học: " + err.message);
