@@ -185,6 +185,20 @@ export interface CourseTableData {
   status: 'Published' | 'Draft';
 }
 
+export interface CourseTableDataBasic {
+  id: string;
+  title: string;
+  price: number;
+  description: string;
+  imageUrl: string;
+  categoryId: string;
+  instructorId: string;
+  chapters: {
+    id: string;
+    title: string;
+  }[];
+}
+
 export interface UserCourseCardProps {
   id: string
   instructor: string

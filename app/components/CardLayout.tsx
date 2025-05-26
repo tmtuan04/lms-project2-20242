@@ -1,3 +1,4 @@
+
 import { fetchCourses } from "../lib/data";
 import Card from "./Card";
 

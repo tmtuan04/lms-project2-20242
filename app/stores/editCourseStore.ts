@@ -2,12 +2,9 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { CourseState } from '../lib/definitions';
 
-
-const savedTitle = localStorage.getItem("lastCreatedCourseTitle") || ""
-
 const initialState = {
-    title: savedTitle,
-    titleConfirmed: !!savedTitle, // titleConfirmed: !!savedTitle là boolean: true nếu có title, false nếu rỗng
+    title: "",
+    titleConfirmed: false, // titleConfirmed: !!savedTitle là boolean: true nếu có title, false nếu rỗng
     description: "",
     descriptionConfirmed: false,
     imagePreview: null,
