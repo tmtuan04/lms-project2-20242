@@ -22,6 +22,7 @@ model User {
   // 1 người dùng có thể là giảng viên của nhiều khóa học
   courses     Course[]           @relation("InstructorCourses")
   enrollments CourseEnrollment[]
+  chapterProgress ChapterProgress[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -76,7 +77,7 @@ model Chapter {
   course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   attachments ChapterAttachment[]
-
+  progress    ChapterProgress[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -156,3 +157,19 @@ enum PaymentStatus {
 
 //   @@index([courseId])
 // }
+
+model ChapterProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  chapterId   String
+  isCompleted Boolean  @default(false)
+  completedAt DateTime?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter     Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chapterId])
+  @@index([userId])
+  @@index([chapterId])
+}
+
