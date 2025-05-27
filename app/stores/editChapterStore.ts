@@ -60,7 +60,7 @@ export const useEditChapterStore = create<ChapterState>()(
             resetStore: () => set(initialState),
         }),
         {
-            name: 'chapter-storage', // unique name for localStorage
+            name: `chapter-storage`, // unique name for localStorage
             partialize: (state) => ({
                 // Only persist these fields
                 title: state.title,

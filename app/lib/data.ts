@@ -8,9 +8,71 @@ import {
   Category,
   UserCourseCardProps,
   CourseTableData,
+  CourseTableDataBasic,
   Customer,
   RevenueChartData,
 } from "./definitions";
+
+// Get Course by ID Course
+export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
+  try {
+    const result = await sql<{
+      id: string;
+      title: string;
+      price: number;
+      description: string;
+      imageUrl: string;
+      categoryId: string;
+      instructorId: string;
+      chapters: {
+        id: string;
+        title: string;
+      }[];
+    }[]>`
+      SELECT 
+        c.id, 
+        c.title, 
+        c.price, 
+        c.description, 
+        c."imageUrl", 
+        c."categoryId", 
+        c."instructorId",
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', ch.id,
+              'title', ch.title
+            )
+          ) FILTER (WHERE ch.id IS NOT NULL),
+          '[]'
+        ) as chapters
+      FROM "Course" c
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      WHERE c.id = ${id}
+      GROUP BY c.id, c.title, c.price, c.description, c."imageUrl", c."categoryId", c."instructorId"
+    `;
+
+    if (result.length === 0) {
+      throw new Error(`Course with ID ${id} not found`);
+    }
+
+    const course = result[0];
+
+    return {
+      id: course.id,
+      title: course.title,
+      price: course.price,
+      description: course.description,
+      imageUrl: course.imageUrl,
+      categoryId: course.categoryId,
+      instructorId: course.instructorId,
+      chapters: course.chapters
+    };
+  } catch (error) {
+    console.error("Error fetching course by id:", error);
+    throw new Error("Failed to fetch course by ID");
+  }
+}
 
 // List courses mà mình là instructor
 export async function getCoursesByInstructor(
