@@ -3,10 +3,11 @@ import "./globals.css";
 import { Poppins } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "react-hot-toast";
+import ClientWrapper from "./client-wrapper"
 
-const poppins  = Poppins({
+const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800"], 
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -22,17 +23,17 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
     <>
-    <Toaster position="top-center" />
+      <Toaster position="top-center" />
       <ClerkProvider>
         <html lang="en">
           <body className={`${poppins.className} antialiased`}>
-            {children}
+            <ClientWrapper>{children}</ClientWrapper>
           </body>
         </html>
       </ClerkProvider>
     </>
-
   );
 }

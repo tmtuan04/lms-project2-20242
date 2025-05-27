@@ -26,6 +26,8 @@ import { updateCourse } from "@/app/lib/actions/coursesActions";
 import { useUserStore } from "@/app/stores/useUserStore";
 import { toast } from "react-hot-toast";
 
+// Sửa lại fetch user từ zustand luôn ở đây
+
 export default function EditCoursePage() {
     const user = useUserStore((s) => s.user)
     const resetStore = useEditCourseStore((s) => s.resetStore);
@@ -92,12 +94,15 @@ export default function EditCoursePage() {
                 setTitleConfirmed(true);
                 setPrice(courseData.price.toString());
                 setPriceConfirmed(true);
-                setDescription(courseData.description);
-                setDescriptionConfirmed(true);
-                setCategory(courseData.categoryId);
-                setCategoryConfirmed(true);
-                setImagePreview(courseData.imageUrl);
-                setImageConfirmed(true);
+
+                setDescription(courseData.description ?? "");
+                setDescriptionConfirmed(!!courseData.description);
+
+                setCategory(courseData.categoryId ?? "");
+                setCategoryConfirmed(!!courseData.categoryId);
+
+                setImagePreview(courseData.imageUrl ?? "");
+                setImageConfirmed(!!courseData.imageUrl);
 
                 // Add existing chapters to store with unique IDs
                 if (courseData.chapters && courseData.chapters.length > 0) {
@@ -203,7 +208,7 @@ export default function EditCoursePage() {
 
     // Confirm buttons logic
     const canConfirmTitle = title.trim() !== "" && !titleConfirmed;
-    const canConfirmDescription = description.trim() !== "" && !descriptionConfirmed;
+    const canConfirmDescription = description !== "" && !descriptionConfirmed;
     const canConfirmImage = !!imagePreview && !imageConfirmed;
     const canConfirmCategory = category !== "" && !categoryConfirmed;
     const canConfirmPrice = price.trim() !== "" && !priceConfirmed;
@@ -470,7 +475,7 @@ export default function EditCoursePage() {
                                         ) : (
                                             <>
                                                 <Link
-                                                    href={`/instructor/edit/1/chapter/${chapter.id}`}
+                                                    href={`/instructor/edit/chapter/${chapter.id}`}
                                                     className="block flex-1 p-2 border rounded-md bg-gray-50 text-sm hover:bg-gray-100 transition"
                                                 >
                                                     {chapter.title}

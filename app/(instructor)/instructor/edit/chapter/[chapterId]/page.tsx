@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,10 +8,20 @@ import Link from "next/link";
 import { Save, Video, Pencil, Eye, Trash2, ArrowLeft, FileText, Image as ImageIcon, Upload, Link as LinkIcon, Edit, CheckCircle, Link as LinkIconLucide } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { useEditChapterStore } from "@/app/stores/editChapterStore";
-// import { useParams } from 'next/navigation';
-// import { useMemo } from 'react';
+import toast from "react-hot-toast";
+// import { useRouter } from "next/navigation";
+
+import { useEffect } from "react";
+import { useParams } from "next/navigation";
+import { getChapterByID } from "@/app/lib/data";
+
+import { updateChapter } from "@/app/lib/actions/chaptersActions";
 
 export default function ChapterDetailPage() {
+    // const router = useRouter();
+    const params = useParams();
+    const chapterId = params?.chapterId as string;
+
     // Get state and actions from store
     const {
         title,
@@ -37,6 +47,7 @@ export default function ChapterDetailPage() {
         setVideoUrl,
         setVideoPreview,
         setIsEditingVideo,
+        setDocuments,
         setVideoConfirmed,
         setDocumentLink,
         setDocumentName,
@@ -46,6 +57,73 @@ export default function ChapterDetailPage() {
         setAccessMode,
         setAccessConfirmed,
     } = useEditChapterStore();
+
+    // State for loading
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        const fetchChapter = async () => {
+            try {
+                const data = await getChapterByID(chapterId);
+                console.log(data);
+                if (!data) return;
+
+                // Title
+                setTitle(data.title ?? "");
+                setTitleConfirmed(!!data.title);
+
+                // Description
+                setDescription(data.description ?? "");
+                setDescriptionConfirmed(!!data.description);
+
+                // Video
+                if (data.videoUrl) {
+                    setVideoUrl(data.videoUrl);
+                    setVideoPreview(data.videoUrl); // Phát lại video
+                    setVideoConfirmed(true);
+                }
+
+                // Documents
+                if (data.attachments && data.attachments.length > 0) {
+                    const formattedDocs = data.attachments.map((doc) => ({
+                        name: doc.name,
+                        url: doc.url,
+                        type: doc.url.endsWith(".pdf") ? "application/pdf"
+                            : /\.(jpg|jpeg|png|gif)$/i.test(doc.url) ? "image"
+                                : "link",
+                    }));
+
+                    setDocuments(formattedDocs);
+                    setDocumentsConfirmed(true);
+                }
+
+                // Access
+                if (data.isLocked) {
+                    setAccessMode('locked');
+                } else {
+                    setAccessMode('free');
+                }
+                setAccessConfirmed(true);
+
+            } catch (error) {
+                console.error("Failed to load chapter", error);
+            }
+        };
+
+        if (chapterId) fetchChapter();
+    }, [chapterId,
+        setTitle,
+        setTitleConfirmed,
+        setDescription,
+        setDescriptionConfirmed,
+        setVideoUrl,
+        setVideoPreview,
+        setVideoConfirmed,
+        addDocument,
+        setDocuments,
+        setDocumentsConfirmed,
+        setAccessConfirmed,
+        setAccessMode]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
@@ -76,6 +154,7 @@ export default function ChapterDetailPage() {
         }
     };
 
+    // Handle Upload Document -> Tạo URL tạm để có thể dùng ngay (ví dụ: hiển thị hình ảnh)
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files) {
@@ -123,6 +202,16 @@ export default function ChapterDetailPage() {
     const canConfirmDocuments = documents.length > 0 && !documentsConfirmed;
     const canConfirmVideo = (videoPreview || videoUrl) && !videoConfirmed;
 
+    // Check if all fields are confirmed
+    const completedCount = [
+        titleConfirmed,
+        descriptionConfirmed,
+        videoConfirmed,
+        documentsConfirmed,
+        accessConfirmed,
+    ].filter(Boolean).length;
+    const isAllConfirmed = completedCount === 5;
+
     // Edit handlers
     const handleEdit = (field: string) => {
         switch (field) {
@@ -145,14 +234,125 @@ export default function ChapterDetailPage() {
         }
     };
 
-    // Completed fields count
-    const completedCount = [
-        titleConfirmed,
-        descriptionConfirmed,
-        videoConfirmed,
-        documentsConfirmed,
-        accessConfirmed,
-    ].filter(Boolean).length;
+    const uploadFileToCloudinary = async (file: File): Promise<string | null> => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                throw new Error("Upload failed");
+            }
+
+            const data = await res.json();
+            return data.secure_url || null;
+        } catch (err) {
+            console.error("Upload error", err);
+            return null;
+        }
+    };
+
+    const handleSave = async () => {
+        if (!isAllConfirmed) {
+            toast.error("Please confirm all fields before saving");
+            return;
+        }
+
+        setIsSaving(true);
+        const savePromise = (async () => {
+            try {
+                // Upload video if it's a file
+                let finalVideoUrl = videoUrl;
+                if (videoFile) {
+                    const videoUploadUrl = await uploadFileToCloudinary(videoFile);
+                    if (!videoUploadUrl) {
+                        throw new Error("Failed to upload video");
+                    }
+                    finalVideoUrl = videoUploadUrl;
+                }
+
+                // Upload documents that are files
+                const uploadedDocuments = await Promise.all(
+                    documents.map(async (doc) => {
+                        if (doc.url.startsWith('blob:')) {
+                            // This is a local file that needs to be uploaded
+                            const response = await fetch(doc.url);
+                            const blob = await response.blob();
+                            const file = new File([blob], doc.name, { type: doc.type });
+                            const uploadUrl = await uploadFileToCloudinary(file);
+                            if (!uploadUrl) {
+                                throw new Error(`Failed to upload document: ${doc.name}`);
+                            }
+                            return uploadUrl;
+                        }
+                        return doc.url;
+                    })
+                );
+
+                // Get course ID from the chapter data
+                const chapterData = await getChapterByID(chapterId);
+                if (!chapterData) {
+                    throw new Error("Failed to get chapter data");
+                }
+
+                // Update chapter with all required fields
+                const result = await updateChapter({
+                    chapterId,
+                    title,
+                    description,
+                    videoUrl: finalVideoUrl || "", // Ensure it's not null
+                    attachments: uploadedDocuments,
+                    isLocked: accessMode === 'locked',
+                    courseId: chapterData.courseId
+                });
+
+                if (!result) {
+                    throw new Error("Failed to update chapter");
+                }
+
+                // router.push("/instructor/edit/1); // Redirect back to course
+            } catch (error) {
+                console.error("Error saving chapter:", error);
+                throw error;
+            }
+        })();
+
+        toast.promise(savePromise, {
+            loading: 'Saving chapter...',
+            success: 'Chapter updated successfully!',
+            error: (err) => `Failed to update chapter: ${err.message}`
+        }).finally(() => {
+            setIsSaving(false);
+        });
+    };
+
+    // const handleDelete = async () => {
+    //     if (!confirm("Are you sure you want to delete this chapter? This action cannot be undone.")) {
+    //         return;
+    //     }
+
+    //     const deletePromise = (async () => {
+    //         const response = await fetch(`/api/chapters/${chapterId}`, {
+    //             method: 'DELETE',
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error("Failed to delete chapter");
+    //         }
+
+    //         router.push("/instructor/edit/1");
+    //     })();
+
+    //     toast.promise(deletePromise, {
+    //         loading: 'Deleting chapter...',
+    //         success: 'Chapter deleted successfully!',
+    //         error: 'Failed to delete chapter'
+    //     });
+    // };
 
     return (
         <div className="p-5 space-y-3">
@@ -164,8 +364,20 @@ export default function ChapterDetailPage() {
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Chapter Creation</h1>
                 <div className="flex gap-2">
-                    <Button variant="outline"><Save />Save</Button>
-                    <Button variant="destructive"><Trash2 size={16} /></Button>
+                    <Button
+                        variant="outline"
+                        onClick={handleSave}
+                        disabled={isSaving || !isAllConfirmed}
+                    >
+                        {isSaving ? "Saving..." : <><Save />Save</>}
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        // onClick={handleDelete}
+                        disabled={isSaving}
+                    >
+                        <Trash2 size={16} />
+                    </Button>
                 </div>
             </div>
 
@@ -401,8 +613,8 @@ export default function ChapterDetailPage() {
                         {(!videoPreview || isEditingVideo) && (
                             <>
                                 {/* Video Upload Dropzone */}
-                                <div 
-                                    {...getRootProps()} 
+                                <div
+                                    {...getRootProps()}
                                     className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
                                         ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
                                 >

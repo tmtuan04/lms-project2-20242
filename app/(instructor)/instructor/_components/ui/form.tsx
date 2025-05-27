@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 
 import { CourseTableData } from "@/app/lib/definitions";
+import { useEffect } from "react"
 
 const formSchema = z.object({
     id: z.string().optional(),
@@ -41,12 +42,16 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
         },
     })
 
+    useEffect(() => {
+        if (!form.getValues("status")) {
+            form.setValue("status", "Draft");
+        }
+    }, [form]);
+
     function handleSubmit(values: z.infer<typeof formSchema>) {
         try {
+            console.log("Submitted values:", values);
             onSubmit(values as CourseTableData);
-
-            // Lưu tên khóa học vào localStorage
-            localStorage.setItem("lastCreatedCourseTitle", values.title)
             form.reset()
         } catch (error) {
             console.error("Form submission error", error)
@@ -74,6 +79,13 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
                                 <FormDescription className="text-sm">This is your public  name course. Don`t worry you can always change this later. </FormDescription>
                                 <FormMessage />
                             </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <input type="hidden" {...field} />
                         )}
                     />
                 </div>

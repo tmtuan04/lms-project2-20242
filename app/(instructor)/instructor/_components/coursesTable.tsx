@@ -52,7 +52,7 @@ export default function CourseTable({ fetchData }: CourseTableProps) {
             if (!response.ok) throw new Error("Failed to create course");
 
             const createdCourse: CourseTableData = await response.json();
-
+            console.log(createdCourse)
             setData((prev) => [createdCourse, ...prev]);
             setIsDialogOpen(false);
 

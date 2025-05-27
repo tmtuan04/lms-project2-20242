@@ -56,7 +56,7 @@ export default function Browse() {
   return (
     <div className="flex flex-col h-full">
       {/* Category Tabs Section */}
-      <div className="flex gap-4 p-3 border-gray-200 bg-white">
+      <div className="flex flex-wrap gap-4 p-3 border-gray-200 bg-white">
         {categories.map((category) => (
           <Button
             key={category.id}
