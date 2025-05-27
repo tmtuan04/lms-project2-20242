@@ -1,0 +1,13 @@
+POST http://localhost:3000/api/order
+Content-Type: application/json
+
+{
+    "userId": "user_2vaAwrXDSijFjWXlwzuh6YK5LKU",
+    "courseId": "82dfcaf6-39b2-4c20-8c54-a140221ff373",
+    "amount": 300000,
+    "customerName": "Tu Minh Tuan",
+    "customerEmail": "tuminhtuana7@gmail.com"
+}
+
+###
+GET http://localhost:3000/api/user/user_2vaAwrXDSijFjWXlwzuh6YK5LKU

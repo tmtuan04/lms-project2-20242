@@ -1,7 +1,8 @@
-import { fetchCourseById } from "@/app/lib/data";
+  import { fetchCourseById } from "@/app/lib/data";
 import { redirect } from "next/navigation";
 import { type NextPage } from "next";
-
+import MarkButton from "../../components/MarkButton";
+import { Lock, CircleAlert } from "lucide-react";
 interface ChapterPageProps {
   params: Promise<{ courseId: string; chaptersId: string }>; // Type params as Promise
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>; // Type searchParams as Promise
@@ -74,40 +75,67 @@ const ChapterPage: NextPage<ChapterPageProps> = async ({
     }
 
     return (
-      <div className="p-6 max-w-5xl mx-auto">
-        <div className="aspect-video relative bg-slate-200 rounded-md mb-4">
-          <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-slate-500">
-            {chapter.videoUrl ? "Video Player" : "No video available"}
-          </div>
-        </div>
+      <>
+        {chapterIndex === 0 ? (
+          // Free xem chapter introduction
+          <>
+            <div className="p-6 max-w-5xl mx-auto">
+              <div className="aspect-video relative bg-slate-200 rounded-md mb-4">
+                <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-slate-500">
+                  {chapter.videoUrl ? "Video Player" : "No video available"}
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-2xl font-bold">{chapter.title}</h2>
+                  {/* initalMarked = {chapter.isMark} */}
+                  <MarkButton initialMarked={false} />
+                </div>
+                {/* <h2 className="text-2xl font-bold mb-2">{chapter.title}</h2> */}
+                <p className="text-slate-600">
+                  {chapter.description || "No description available."}
+                </p>
 
-        <div className="mt-4">
-          <h2 className="text-2xl font-bold mb-2">{chapter.title}</h2>
-          <p className="text-slate-600">
-            {chapter.description || "No description available."}
-          </p>
-
-          {chapter.attachments && chapter.attachments.length > 0 && (
-            <div className="mt-4">
-              <h3 className="font-semibold mb-2">Attachments:</h3>
-              <ul className="space-y-2">
-                {chapter.attachments.map((attachment) => (
-                  <li key={attachment.id}>
-                    <a
-                      href={attachment.url}
-                      className="text-blue-600 hover:underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {attachment.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+                {chapter.attachments && chapter.attachments.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="font-semibold mb-2">Attachments:</h3>
+                    <ul className="space-y-2">
+                      {chapter.attachments.map((attachment) => (
+                        <li key={attachment.id}>
+                          <a
+                            href={attachment.url}
+                            className="text-blue-600 hover:underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {attachment.name}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          </>
+        ) : (
+          <>
+            {/* UI Lock */}
+            <div className="bg-yellow-200 text-yellow-800 p-4 flex items-center gap-2">
+              <CircleAlert />
+              <span>You need to purchase this course to watch this chapter.</span>
+            </div>
+            <div className="p-6 max-w-5xl mx-auto">
+              <div className="aspect-video relative bg-slate-200 rounded-md mb-4">
+                <div className="absolute inset-0 flex items-center justify-center gap-2 text-2xl font-bold text-slate-500">
+                  <Lock className="w-8 h-8 " />
+                  <p> This chapter is locked</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </>
     );
   } catch (error) {
     console.error("Error in ChapterPage:", error);

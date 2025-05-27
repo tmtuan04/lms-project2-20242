@@ -8,12 +8,12 @@ import clsx from 'clsx';
 const links = [
     {
         name: "Courses",
-        href: "/instructor",
+        href: "/instructor-test",
         icon: Menu,
     },
     {
         name: "Analytics",
-        href: "/instructor/analytics",
+        href: "/instructor-test/analytics-test",
         icon: ChartNoAxesCombined,
     },
 ];
@@ -50,7 +50,7 @@ export default function Sidebar() {
                                                 "text-[#255C6E]": isActive,
                                             }
                                         )}
-                                        size={20}
+                                        size={18}
                                     />
                                     {link.name}
                                 </Link>

@@ -16,9 +16,7 @@ import {
 } from "@tanstack/react-table";
 
 import { Input } from "@/components/ui/input"
-
 import { Button } from "@/components/ui/button"
-
 import { DataTableViewOptions } from "./ViewOptions"
 
 import {
@@ -100,7 +98,7 @@ export default function DataTable<TData, TValue>({
                             Delete Selected ({Object.keys(rowSelection).length})
                         </Button>
                     )}
-                    <Button onClick={onAdd} className="bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md ">
+                    <Button onClick={onAdd} className="bg-indigo-600 hover:bg-blue-700 text-white rounded-md shadow-md">
                         <CirclePlus />
                         Create Course
                     </Button>

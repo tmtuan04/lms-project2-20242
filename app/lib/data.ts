@@ -1,14 +1,213 @@
 "use server";
 
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
 import sql from "./db";
 import {
   CourseCardProps,
   CourseWithLessons,
   Lesson,
   Category,
+  UserCourseCardProps,
+  CourseTableData,
+  CourseTableDataBasic
 } from "./definitions";
 
-// Check isInstructor
+// Get Chapter by ID Chapter
+export async function getChapterByID(id: string) {
+  try {
+    const chapter = await prisma.chapter.findUnique({
+      where: { id },
+      include: {
+        course: {
+          select: { title: true },
+        },
+        attachments: {
+          select: {
+            id: true,
+            name: true,
+            url: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!chapter) {
+      throw new Error(`Chapter with ID ${id} not found`);
+    }
+
+    return {
+      id: chapter.id,
+      title: chapter.title,
+      description: chapter.description ?? "",
+      videoUrl: chapter.videoUrl ?? "",
+      isLocked: chapter.isLocked,
+      courseId: chapter.courseId,
+      courseName: chapter.course.title,
+      attachments: chapter.attachments,
+      createdAt: chapter.createdAt,
+      updatedAt: chapter.updatedAt,
+    };
+  } catch (error) {
+    console.error("Error fetching chapter by ID:", error);
+    throw new Error("Failed to fetch chapter by ID");
+  }
+}
+
+
+// Get Course by ID Course
+export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
+  try {
+    const result = await sql<{
+      id: string;
+      title: string;
+      price: number;
+      description: string;
+      imageUrl: string;
+      categoryId: string;
+      instructorId: string;
+      chapters: {
+        id: string;
+        title: string;
+      }[];
+    }[]>`
+      SELECT 
+        c.id, 
+        c.title, 
+        c.price, 
+        c.description, 
+        c."imageUrl", 
+        c."categoryId", 
+        c."instructorId",
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', ch.id,
+              'title', ch.title
+            )
+          ) FILTER (WHERE ch.id IS NOT NULL),
+          '[]'
+        ) as chapters
+      FROM "Course" c
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      WHERE c.id = ${id}
+      GROUP BY c.id, c.title, c.price, c.description, c."imageUrl", c."categoryId", c."instructorId"
+    `;
+
+    if (result.length === 0) {
+      throw new Error(`Course with ID ${id} not found`);
+    }
+
+    const course = result[0];
+
+    return {
+      id: course.id,
+      title: course.title,
+      price: course.price,
+      description: course.description,
+      imageUrl: course.imageUrl,
+      categoryId: course.categoryId,
+      instructorId: course.instructorId,
+      chapters: course.chapters
+    };
+  } catch (error) {
+    console.error("Error fetching course by id:", error);
+    throw new Error("Failed to fetch course by ID");
+  }
+}
+
+// List courses mà mình là instructor
+export async function getCoursesByInstructor(
+  instructorId: string
+): Promise<CourseTableData[]> {
+  try {
+    const data = await sql<
+      { id: string; title: string; price: number; isPublished: boolean }[]
+    >`
+      SELECT id, title, price, c."isPublished", c."createdAt"
+      FROM "Course" c
+      WHERE c."instructorId" = ${instructorId}
+      ORDER BY c."createdAt" DESC
+    `;
+
+    return data.map(
+      (row: {
+        id: string;
+        title: string;
+        price: number;
+        isPublished: boolean;
+      }) => ({
+        id: row.id,
+        title: row.title || "Untitled Course",
+        price: row.price || 0,
+        status: row.isPublished ? "Published" : "Draft",
+      })
+    );
+  } catch (error) {
+    console.error("Error fetch courses by instructor:", error);
+    throw new Error("Failed to fetch courses by instructor");
+  }
+}
+
+export async function getInitUserCourseCards(): Promise<UserCourseCardProps[]> {
+  return [
+    {
+      id: "course-001",
+      instructor: "Nguyễn Văn A",
+      title: "Lập trình React cơ bản",
+      category: "Lập trình web",
+      chaptersCount: 16,
+      completedChaptersCount: 0,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+    {
+      id: "course-002",
+      instructor: "Trần Thị B",
+      title: "Thiết kế UI/UX chuyên sâu",
+      category: "Thiết kế",
+      chaptersCount: 12,
+      completedChaptersCount: 5,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+    {
+      id: "course-003",
+      instructor: "Lê Văn C",
+      title: "Python cho người mới bắt đầu",
+      category: "Lập trình",
+      chaptersCount: 20,
+      completedChaptersCount: 20,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+    {
+      id: "course-004",
+      instructor: "Lê Văn C",
+      title: "Python cho người mới bắt đầu",
+      category: "Lập trình",
+      chaptersCount: 20,
+      completedChaptersCount: 20,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+    {
+      id: "course-005",
+      instructor: "Lê Văn C",
+      title: "Python cho người mới bắt đầu",
+      category: "Lập trình",
+      chaptersCount: 20,
+      completedChaptersCount: 20,
+      imageUrl:
+        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+    },
+  ];
+}
+
+// Check isInstructor - Sau bỏ cái này đi
 export const checkIsInstructor = async (userId: string) => {
   try {
     const data = await sql<{ isInstructor: boolean }[]>`
@@ -82,14 +281,9 @@ export const fetchCourses = async (query?: string) => {
   }
 };
 
-// Các hàm khác giữ nguyên...
-
-// Sửa lại hàm fetchCourseById
+// fetchCourseById
 export async function fetchCourseById(courseId: string) {
   try {
-    // Debug log
-    // console.log("Fetching course with ID:", courseId);
-
     const course = await sql<CourseWithLessons[]>`
       SELECT 
         c.id,
@@ -128,9 +322,6 @@ export async function fetchCourseById(courseId: string) {
       GROUP BY c.id, c.title, c.description, c.price, c."imageUrl", u.name
     `;
 
-    // Debug log
-    // console.log("Found course:", course);
-
     if (!course || course.length === 0) {
       console.log("No course found");
       return null;
@@ -163,5 +354,49 @@ export async function fetchChapterById(chapterId: string) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch chapter");
+  }
+}
+
+// Kiểm tra trạng thái mua khóa học của người dùng
+type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
+
+export async function checkUserCourseAccess(
+  userId: string,
+  courseId: string
+): Promise<{
+  hasAccess: boolean;
+  isEnrolled: boolean;
+  paymentStatus?: PaymentStatus;
+}> {
+  try {
+    // Kiểm tra enrollment
+    const enrollment = await sql<{ id: string }[]>`
+      SELECT id 
+      FROM "CourseEnrollment"
+      WHERE "userId" = ${userId} 
+      AND "courseId" = ${courseId}
+    `;
+
+    // Kiểm tra payment status
+    const payment = await sql<{ status: PaymentStatus }[]>`
+      SELECT status
+      FROM "Payment"
+      WHERE "userId" = ${userId}
+      AND "courseId" = ${courseId}
+      ORDER BY "createdAt" DESC
+      LIMIT 1
+    `;
+
+    return {
+      hasAccess:
+        enrollment.length > 0 &&
+        payment.length > 0 &&
+        payment[0].status === "SUCCESS",
+      isEnrolled: enrollment.length > 0,
+      paymentStatus: payment[0]?.status,
+    };
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to check user course access");
   }
 }
