@@ -22,6 +22,9 @@ export default function ChapterDetailPage() {
     const params = useParams();
     const chapterId = params?.chapterId as string;
 
+    // Giữ courseId sử dụng trong nút "Back"
+    const [courseId, setCourseId] = useState<string | null>(null);
+
     // Get state and actions from store
     const {
         title,
@@ -65,8 +68,9 @@ export default function ChapterDetailPage() {
         const fetchChapter = async () => {
             try {
                 const data = await getChapterByID(chapterId);
-                console.log(data);
                 if (!data) return;
+
+                setCourseId(data.courseId);
 
                 // Title
                 setTitle(data.title ?? "");
@@ -171,6 +175,7 @@ export default function ChapterDetailPage() {
         }
     };
 
+    // Iframe youtube - không cần thiết lắm nhỉ?
     const convertYoutubeUrlToEmbed = (url: string) => {
         const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/;
         const match = url.match(youtubeRegex);
@@ -299,12 +304,13 @@ export default function ChapterDetailPage() {
                     throw new Error("Failed to get chapter data");
                 }
 
+
                 // Update chapter with all required fields
                 const result = await updateChapter({
                     chapterId,
                     title,
                     description,
-                    videoUrl: finalVideoUrl || "", // Ensure it's not null
+                    videoUrl: finalVideoUrl || "",
                     attachments: uploadedDocuments,
                     isLocked: accessMode === 'locked',
                     courseId: chapterData.courseId
@@ -330,6 +336,7 @@ export default function ChapterDetailPage() {
         });
     };
 
+
     // const handleDelete = async () => {
     //     if (!confirm("Are you sure you want to delete this chapter? This action cannot be undone.")) {
     //         return;
@@ -353,10 +360,10 @@ export default function ChapterDetailPage() {
     //         error: 'Failed to delete chapter'
     //     });
     // };
-
+    
     return (
         <div className="p-5 space-y-3">
-            <Link href="/instructor/edit/1">
+            <Link href={`/instructor/edit/${courseId}`}>
                 <div className="inline-flex items-center gap-2 hover:bg-gray-100 rounded-md p-1 cursor-pointer mb-2">
                     <ArrowLeft size={16} />Back to course setup
                 </div>

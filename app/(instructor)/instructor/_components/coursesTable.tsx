@@ -17,7 +17,6 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { useUserStore } from "@/app/stores/useUserStore";
-import { useAuth } from "@clerk/nextjs";
 import { toast } from "react-hot-toast";
 
 interface CourseTableProps {
@@ -26,8 +25,6 @@ interface CourseTableProps {
 
 export default function CourseTable({ fetchData }: CourseTableProps) {
     const user = useUserStore((s) => s.user);
-    const fetchUser = useUserStore((s) => s.fetchUser);
-    const { userId } = useAuth();
 
     const router = useRouter();
     const [data, setData] = useState<CourseTableData[]>([]);
@@ -102,11 +99,8 @@ export default function CourseTable({ fetchData }: CourseTableProps) {
     };
 
     useEffect(() => {
-        if (userId) {
-            fetchUser(userId)
-        }
         setData(fetchData);
-    }, [fetchData, userId, fetchUser]);
+    }, [fetchData]);
     return (
         <>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

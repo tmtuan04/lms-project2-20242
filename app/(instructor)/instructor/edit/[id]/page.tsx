@@ -271,9 +271,8 @@ export default function EditCoursePage() {
                 instructorId: user.id,
             });
 
-            // Reset store và xóa localStorage persist
+            // Reset store
             resetStore();
-            localStorage.removeItem('course-storage');
             toast.success("Update course successful");
         } catch (error) {
             const err = error as Error
