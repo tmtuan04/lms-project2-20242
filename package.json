@@ -40,9 +40,7 @@
     "postgres": "^3.4.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.56.0",
-    "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "recharts": "^2.15.3",
     "svix": "^1.64.0",
@@ -65,7 +63,6 @@
     "prisma": "^6.6.0",
     "prisma-erd-generator": "^2.0.4",
     "tailwindcss": "^4",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5"
   }
 }
