@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Cái này đang thừa
 export async function createCourse({
   title,
   description,

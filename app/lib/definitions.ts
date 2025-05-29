@@ -3,8 +3,6 @@ export interface Category {
   name: string
 }
 
-// 4 cái này sử dụng cho lưu trữ localStorage
-
 type ChapterDocument = {
   name: string;
   type: string;

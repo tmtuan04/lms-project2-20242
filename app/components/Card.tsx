@@ -46,7 +46,7 @@ const Card: React.FC<CourseCardProps> = ({
           </span>
         </div>
         <Link
-          href={`/${id}/lesson-1`}
+          href={`/${id}/chapters/1`}
           className="flex items-center justify-center w-full px-3 py-1.5 text-[0.9rem] font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-2 focus:ring-blue-300"
         >
           Read more

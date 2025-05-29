@@ -72,8 +72,8 @@ export const columns: ColumnDef<CourseTableData>[] = [
             const status = row.getValue("status") as string;
 
             const colorMap: Record<string, string> = {
-                published: "bg-green-100 text-green-700",
-                draft: "bg-red-100 text-red-700",
+                Published: "bg-green-100 text-green-700",
+                Draft: "bg-red-100 text-red-700",
             };
 
             const style = colorMap[status] || "bg-gray-100 text-gray-700";

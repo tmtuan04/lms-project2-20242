@@ -1,5 +1,8 @@
 "use server";
 
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
 import sql from "./db";
 import {
   CourseCardProps,
@@ -12,6 +15,50 @@ import {
   Customer,
   RevenueChartData,
 } from "./definitions";
+
+// Get Chapter by ID Chapter
+export async function getChapterByID(id: string) {
+  try {
+    const chapter = await prisma.chapter.findUnique({
+      where: { id },
+      include: {
+        course: {
+          select: { title: true },
+        },
+        attachments: {
+          select: {
+            id: true,
+            name: true,
+            url: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!chapter) {
+      throw new Error(`Chapter with ID ${id} not found`);
+    }
+
+    return {
+      id: chapter.id,
+      title: chapter.title,
+      description: chapter.description ?? "",
+      videoUrl: chapter.videoUrl ?? "",
+      isLocked: chapter.isLocked,
+      courseId: chapter.courseId,
+      courseName: chapter.course.title,
+      attachments: chapter.attachments,
+      createdAt: chapter.createdAt,
+      updatedAt: chapter.updatedAt,
+    };
+  } catch (error) {
+    console.error("Error fetching chapter by ID:", error);
+    throw new Error("Failed to fetch chapter by ID");
+  }
+}
+
 
 // Get Course by ID Course
 export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
