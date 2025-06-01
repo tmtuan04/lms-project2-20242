@@ -1,7 +1,4 @@
-
-
 import { CircleDollarSign, UsersRound, Inbox, FileText } from 'lucide-react';
-
 
 const iconMap = {
     sales: CircleDollarSign,
