@@ -11,6 +11,8 @@ import {
   Category,
   UserCourseCardProps,
   CourseTableData,
+  Customer,
+  RevenueChartData,
   CourseTableDataBasic
 } from "./definitions";
 
@@ -152,6 +154,137 @@ export async function getCoursesByInstructor(
   }
 }
 
+//--------------Fetch data cho analytics------------------
+// 4 card
+export async function fetchCardAnalys(
+  instructorId: string
+) {
+  try {
+    const courseCountPromise = sql`SELECT COUNT(*)
+      FROM "Course" c
+      WHERE c."instructorId" = ${instructorId}
+    `;
+    const customerCountPromise = sql`SELECT COUNT(DISTINCT p."userId")
+      FROM "Course" c
+      JOIN "Payment" p ON c.id = p."courseId"
+      WHERE c."instructorId" = ${instructorId}
+    `;
+    const invoiceCountPromise = sql`SELECT COUNT(*)
+      FROM "Course" c
+      JOIN "Payment" p ON c.id = p."courseId"
+      WHERE c."instructorId" = ${instructorId}
+    `;
+    const totalPaidInvoicesPromise = sql`
+      SELECT SUM(p."amount" ::NUMERIC) as total
+      FROM "Course" c
+      JOIN "Payment" p ON c.id = p."courseId"
+      WHERE c."instructorId" = ${instructorId} and p."status" = 'SUCCESS'
+    `;
+    //Fetch theo CourseEnrollment
+    // const customerCountPromise = sql`
+    //   SELECT COUNT(DISTINCT ce."userId")
+    //   FROM "Course" c
+    //   JOIN "CourseEnrollment" ce ON c.id = ce."courseId"
+    //   WHERE c."instructorId" = ${instructorId}
+    // `;
+
+
+    const [courseCountResult, customerCountResult, invoiceCountResult, totalPaidInvoicesResult] = await Promise.all([
+      courseCountPromise,
+      customerCountPromise,
+      invoiceCountPromise,
+      totalPaidInvoicesPromise,
+    ]);
+
+    const courseCount = Number(courseCountResult[0]?.count ?? '0');
+    const customerCount = Number(customerCountResult[0]?.count ?? '0');
+    const invoiceCount = Number(invoiceCountResult[0]?.count ?? '0');
+    const totalPaidInvoices = Number(totalPaidInvoicesResult[0]?.total ?? '0');
+
+    return {
+      customerCount,
+      courseCount,
+      invoiceCount,
+      totalPaidInvoices,
+    };
+
+  } catch (error) {
+    console.error("Error:", error);
+    throw new Error("Failed to fetch by instructor");
+  }
+}
+
+// Recent customers: 4 customer co payment moi nhat
+export async function getRecentCustomer(
+  instructorId: string
+): Promise<Customer[]> {
+  try {
+    const data = await sql<
+      { id: string; name: string; email: string; image_url: string; amount: number; course_title: string }[]
+    >`
+      SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, p."amount"::NUMERIC, c."title" AS course_title
+      FROM "Payment" p
+      JOIN "User" u ON p."userId" = u.id
+      JOIN "Course" c ON p."courseId" = c.id
+      WHERE p."status" = 'SUCCESS' and  c."instructorId" = ${instructorId}
+      ORDER BY p."updatedAt" DESC
+      LIMIT 4
+    `;
+
+    return data.map((row: { id: string; name: string; email: string; image_url: string; amount: number; course_title: string }) => ({
+      id: row.id,
+      name: row.name || 'Anomymous',
+      amount: row.amount || 0,
+      email: row.email || '',
+      course_title: row.course_title || '',
+      image_url: row.image_url || 'https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_hybrid&w=740',
+    }));
+
+  } catch (error) {
+    console.error("Error fetch recent customers:", error);
+    throw new Error("Failed to fetch recent customers");
+  }
+}
+
+//Chart revenue
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+export async function getRevenueData(instructorId: string): Promise<RevenueChartData[]> {
+  try {
+    const data = await sql<{ month: string; revenue: number }[]>
+      `WITH months AS (
+        SELECT to_char(generate_series(1, extract(month from CURRENT_DATE)::int), 'FM00') AS month
+      )
+      SELECT
+        m.month,
+        COALESCE(SUM(
+          CASE
+            WHEN p."status" = 'SUCCESS' AND c."instructorId" = ${instructorId}
+            THEN p."amount"::NUMERIC
+            ELSE 0
+          END
+        ), 0) AS revenue
+      FROM months m
+      LEFT JOIN "Payment" p ON to_char(p."updatedAt", 'MM') = m.month
+      LEFT JOIN "Course" c ON c.id = p."courseId"
+      GROUP BY m.month
+      ORDER BY m.month;
+      `;
+    return data.map((row: { month: string; revenue: number }) => ({
+      month: MONTHS[parseInt(row.month, 10) - 1],
+      venenue: Number(row.revenue),
+    }))
+  }
+  catch (error) {
+    console.log("Error from fetch Revenue Chart:", error);
+    throw new Error("Failes to fetch revenue chart data");
+  }
+}
+//------------------------------------------------------
+
 export async function getInitUserCourseCards(): Promise<UserCourseCardProps[]> {
   return [
     {
@@ -261,15 +394,14 @@ export const fetchCourses = async (query?: string) => {
       LEFT JOIN "Chapter" ch ON ch."courseId" = c.id  -- Join với bảng Chapter
       WHERE 
         c."isPublished" = true
-        ${
-          query
-            ? sql`AND (
+        ${query
+        ? sql`AND (
           LOWER(c.title) LIKE ${`%${query.toLowerCase()}%`} OR
           LOWER(u.name) LIKE ${`%${query.toLowerCase()}%`} OR
           LOWER(cat.name) LIKE ${`%${query.toLowerCase()}%`}
         )`
-            : sql``
-        }
+        : sql``
+      }
       GROUP BY c.id, c."courseUrl", c.title, cat.name, c.price, c."imageUrl", u.name
       ORDER BY c."createdAt" DESC
     `;
