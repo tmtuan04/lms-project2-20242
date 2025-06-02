@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Montserrat } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "react-hot-toast";
+import ClientWrapper from "./client-wrapper"
 
-const montserrat = Montserrat({
+const poppins = Poppins({
   subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
   title: {
     template: "%s | HustLMS",
-    default: "HustLMS" 
+    default: "HustLMS"
   },
   description: "Learning Management System for HUST Students",
 };
@@ -20,13 +23,17 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={`${montserrat.className} antialiased`}>
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <>
+      <Toaster position="top-center" />
+      <ClerkProvider>
+        <html lang="en">
+          <body className={`${poppins.className} antialiased`}>
+            <ClientWrapper>{children}</ClientWrapper>
+          </body>
+        </html>
+      </ClerkProvider>
+    </>
   );
 }

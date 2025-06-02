@@ -17,7 +17,7 @@ export default function ModeToggle() {
 
     const handleThemeChange = (newTheme: string) => {
         setTheme(newTheme);
-        localStorage.setItem("theme", newTheme); // Lưu theme vào localStorage
+        localStorage.setItem("theme", newTheme);
     };
 
     return (

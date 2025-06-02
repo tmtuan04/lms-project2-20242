@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from "uuid"
 import Link from "next/link";
 import Image from "next/image";
-import { TableOfContents, Image as ImageIcon, CheckCircle, Trash2, Pencil } from "lucide-react"
+import { TableOfContents, Image as ImageIcon, CheckCircle, Trash2, Pencil, Loader2 } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -18,12 +18,20 @@ import {
 } from "@/components/ui/select";
 import { useEditCourseStore } from "@/app/stores/editCourseStore";
 import { useState } from "react";
+import { useParams } from "next/navigation";
+import { getCourseByID, fetchCategories } from "@/app/lib/data";
+import { Category } from "@/app/lib/definitions";
 
-import { createCourse } from "@/app/lib/actions/coursesActions";
+import { updateCourse } from "@/app/lib/actions/coursesActions";
 import { useUserStore } from "@/app/stores/useUserStore";
+import { toast } from "react-hot-toast";
+
+// Sửa lại fetch user từ zustand luôn ở đây
 
 export default function EditCoursePage() {
     const user = useUserStore((s) => s.user)
+    const resetStore = useEditCourseStore((s) => s.resetStore);
+    const params = useParams();
 
     // Get state and actions from store
     const {
@@ -54,6 +62,89 @@ export default function EditCoursePage() {
         deleteChapter,
         setChaptersConfirmed,
     } = useEditCourseStore();
+
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const fetchedCategories = await fetchCategories();
+                setCategories(fetchedCategories);
+            } catch (error) {
+                console.error("Failed to load categories:", error);
+            }
+        };
+
+        loadCategories();
+    }, []);
+
+    // Fetch course data on mount
+    useEffect(() => {
+        const fetchCourse = async () => {
+            try {
+                const courseId = params.id as string;
+                const courseData = await getCourseByID(courseId);
+                console.log(courseData);
+                // Reset chapters before adding new ones
+                resetStore();
+
+                // Update store with fetched data
+                setTitle(courseData.title);
+                setTitleConfirmed(true);
+                setPrice(courseData.price.toString());
+                setPriceConfirmed(true);
+
+                setDescription(courseData.description ?? "");
+                setDescriptionConfirmed(!!courseData.description);
+
+                setCategory(courseData.categoryId ?? "");
+                setCategoryConfirmed(!!courseData.categoryId);
+
+                setImagePreview(courseData.imageUrl ?? "");
+                setImageConfirmed(!!courseData.imageUrl);
+
+                // Add existing chapters to store with unique IDs
+                if (courseData.chapters && courseData.chapters.length > 0) {
+                    // Sort chapters by their original order if needed
+                    const sortedChapters = [...courseData.chapters].sort((a, b) => {
+                        // You might want to add a position/order field to your chapters table
+                        // For now, we'll just use the title for sorting
+                        return a.title.localeCompare(b.title);
+                    });
+
+                    sortedChapters.forEach(chapter => {
+                        addChapter({
+                            id: chapter.id, // Use the original chapter ID from database
+                            title: chapter.title,
+                            isEditing: false
+                        });
+                    });
+                    setChaptersConfirmed(true);
+                }
+            } catch (error) {
+                console.error("Error fetching course:", error);
+                toast.error("Failed to load course data");
+            }
+        };
+
+        fetchCourse();
+    }, [
+        params.id,
+        setTitle,
+        setTitleConfirmed,
+        setPrice,
+        setPriceConfirmed,
+        setDescription,
+        setDescriptionConfirmed,
+        setCategory,
+        setCategoryConfirmed,
+        setImagePreview,
+        setImageConfirmed,
+        addChapter,
+        setChaptersConfirmed,
+        resetStore
+    ]);
 
     const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -87,7 +178,13 @@ export default function EditCoursePage() {
 
     // Chapter logic
     const handleAddChapter = () => {
-        addChapter({ id: uuidv4(), title: "", isEditing: true });
+        // Generate a new unique ID for new chapters
+        const newChapterId = uuidv4();
+        addChapter({
+            id: newChapterId,
+            title: "",
+            isEditing: true
+        });
     };
 
     const handleChapterTitleChange = (id: string, value: string) => {
@@ -111,7 +208,7 @@ export default function EditCoursePage() {
 
     // Confirm buttons logic
     const canConfirmTitle = title.trim() !== "" && !titleConfirmed;
-    const canConfirmDescription = description.trim() !== "" && !descriptionConfirmed;
+    const canConfirmDescription = description !== "" && !descriptionConfirmed;
     const canConfirmImage = !!imagePreview && !imageConfirmed;
     const canConfirmCategory = category !== "" && !categoryConfirmed;
     const canConfirmPrice = price.trim() !== "" && !priceConfirmed;
@@ -137,37 +234,52 @@ export default function EditCoursePage() {
         }
     };
 
-    const handlePublish = async () => {
+    const handleUpdate = async () => {
         try {
-            if (!imageFile) {
-                alert("Chưa có ảnh!");
+            setIsUpdating(true);
+
+            let imageUrlToUse = imagePreview || ""; // Use existing image preview if no new file
+
+            if (imageFile) {
+                // If a new image file is selected, upload it
+                imageUrlToUse = await uploadImageToCloudinary(imageFile);
+            } else if (!imageUrlToUse) {
+                // If no new file and no existing image, show error
+                toast.error("Image not found");
+                setIsUpdating(false);
                 return;
             }
+
             if (!user?.id) {
-                alert("Chưa tìm thấy User!");
+                toast.error("User not found");
+                setIsUpdating(false);
                 return;
             }
-            // 1. Upload ảnh lên Cloudinary
-            const imageUrl = await uploadImageToCloudinary(imageFile);
-    
-            // 2. Lấy danh sách title của chapter
+
+            // Lấy danh sách title của chapter
             const chapterTitles = chapters.map((c) => c.title);
-    
-            // 3. Gọi server action tạo khoá học
-            await createCourse({
+
+            // Gọi server action cập nhật khoá học
+            await updateCourse({
+                courseId: params.id as string,
                 title,
                 description,
-                imageUrl,
+                imageUrl: imageUrlToUse,
                 price,
-                categoryId: "1ed53f03-4478-4bfa-b654-76182a588d5f",
+                categoryId: category || "",
                 chapters: chapterTitles,
-                instructorId: user?.id,
+                instructorId: user.id,
             });
-    
-            alert("Tạo khoá học thành công!");
+
+            // Reset store
+            resetStore();
+            toast.success("Update course successful");
         } catch (error) {
             const err = error as Error
-            alert("Có lỗi khi tạo khoá học: " + err.message);
+            console.error("Error update course", err.message);
+            toast.error("Error update course")
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -199,8 +311,18 @@ export default function EditCoursePage() {
                             Completed all fields ({completedCount}/6)
                         </p>
                     </div>
-                    <Button disabled={completedCount < 6} onClick={handlePublish}>
-                        Publish
+                    <Button
+                        disabled={completedCount < 6 || isUpdating}
+                        onClick={handleUpdate}
+                    >
+                        {isUpdating ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Updating...
+                            </>
+                        ) : (
+                            "Update Course"
+                        )}
                     </Button>
                 </div>
 
@@ -352,7 +474,7 @@ export default function EditCoursePage() {
                                         ) : (
                                             <>
                                                 <Link
-                                                    href={`/instructor/edit/1/chapter/${chapter.id}`}
+                                                    href={`/instructor/edit/chapter/${chapter.id}`}
                                                     className="block flex-1 p-2 border rounded-md bg-gray-50 text-sm hover:bg-gray-100 transition"
                                                 >
                                                     {chapter.title}
@@ -420,9 +542,11 @@ export default function EditCoursePage() {
                                     <SelectValue placeholder="Select a category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="web">Web Development</SelectItem>
-                                    <SelectItem value="design">Design</SelectItem>
-                                    <SelectItem value="marketing">Marketing</SelectItem>
+                                    {categories.map((cat) => (
+                                        <SelectItem key={cat.id} value={cat.id}>
+                                            {cat.name}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>

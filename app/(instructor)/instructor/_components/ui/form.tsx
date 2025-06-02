@@ -15,15 +15,9 @@ import {
 } from "@/components/ui/form"
 
 import { Input } from "@/components/ui/input"
-// import {
-//     Select,
-//     SelectContent,
-//     SelectItem,
-//     SelectTrigger,
-//     SelectValue
-// } from "@/components/ui/select"
 
 import { CourseTableData } from "@/app/lib/definitions";
+import { useEffect } from "react"
 
 const formSchema = z.object({
     id: z.string().optional(),
@@ -43,17 +37,21 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
         defaultValues: initialData || {
             title: "",
             status: "Draft",
-            price: 0,
             id: "",
+            price: 0,
         },
     })
 
+    useEffect(() => {
+        if (!form.getValues("status")) {
+            form.setValue("status", "Draft");
+        }
+    }, [form]);
+
     function handleSubmit(values: z.infer<typeof formSchema>) {
         try {
+            console.log("Submitted values:", values);
             onSubmit(values as CourseTableData);
-
-            // Lưu tên khóa học vào localStorage
-            localStorage.setItem("lastCreatedCourseTitle", values.title)
             form.reset()
         } catch (error) {
             console.error("Form submission error", error)
@@ -83,57 +81,14 @@ export default function CreateCourseForm({ onSubmit, initialData }: MyFormProps)
                             </FormItem>
                         )}
                     />
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <input type="hidden" {...field} />
+                        )}
+                    />
                 </div>
-                {/* <div className="col-span-6">
-                        <FormField
-                            control={form.control}
-                            name="price"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Price</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="Price"
-
-                                            type="number"
-                                            {...field} />
-                                    </FormControl>
-                                    <FormDescription>This is your public display price.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div> */}
-
-                {/* <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-6">
-                        <FormField
-                            control={form.control}
-                            name="status"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Status</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a verified status to display" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Published">Published</SelectItem>
-                                            <SelectItem value="Draft">Draft</SelectItem>
-
-                                        </SelectContent>
-                                    </Select>
-                                    <FormDescription>You can chose your status.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                    <div className="col-span-6">
-                    </div>
-                </div> */}
                 <Button type="submit" className="px-4">{initialData ? "Update" : "Create"}</Button>
             </form>
         </Form>

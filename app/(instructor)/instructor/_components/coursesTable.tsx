@@ -1,7 +1,5 @@
 "use client";
 
-// Tạm thời chưa cần động đến cái này
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Component UI Table
@@ -11,7 +9,6 @@ import { CourseTableData } from "@/app/lib/definitions";
 import CreateCourseForm from "./ui/form";
 // Cấu hình các cột cho DataTable
 import { columns } from "./columns";
-// shadCN UI
 import {
     Dialog,
     DialogContent,
@@ -19,38 +16,70 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { useUserStore } from "@/app/stores/useUserStore";
+import { toast } from "react-hot-toast";
 
 interface CourseTableProps {
     fetchData: CourseTableData[];
 }
 
 export default function CourseTable({ fetchData }: CourseTableProps) {
+    const user = useUserStore((s) => s.user);
+
     const router = useRouter();
-
     const [data, setData] = useState<CourseTableData[]>([]);
-
-    // const [editingCourse, setEditingCourse] = useState<CourseTableData | null>(null);
 
     // Đóng mở form
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     // Event Create Course
-    const handleCreate = (newRecord: Omit<CourseTableData, "id">) => {
-        const record = { ...newRecord, id: String(data.length + 1) };
-        setData([record, ...data]);
-        setIsDialogOpen(false);
+    // Omit là một utility type có sẵn trong TypeScript:  Omit<T, K> nghĩa là: lấy tất cả các field trong kiểu T, trừ đi K (trừ đi id vì nó tự sinh trong database)
+    const handleCreate = async (newRecord: Omit<CourseTableData, "id">) => {
+        try {
+            const response = await fetch("/api/courses", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ...newRecord,
+                    instructorId: user?.id
+                })
+            })
+            if (!response.ok) throw new Error("Failed to create course");
+
+            const createdCourse: CourseTableData = await response.json();
+            console.log(createdCourse)
+            setData((prev) => [createdCourse, ...prev]);
+            setIsDialogOpen(false);
+
+            toast.success("Create course successful");
+        } catch (err) {
+            console.error("Error creating course:", err);
+            toast.error("Error creating course!")
+        }
     };
 
-    // Event Update Course - Tạm thời đang cần sửa ở đây
-    // const handleUpdate = (updatedCourse: CourseTableData) => {
-    //     setData(data.map((record) => (record.id === updatedCourse.id ? updatedCourse : record)));
-    //     setIsDialogOpen(false);
-    //     setEditingCourse(null);
-    // };
-
     // Event Delete Course
-    const handleDelete = (id: string) => {
-        setData(data.filter((record) => record.id !== id));
+    const handleDelete = async (id: string) => {
+        try {
+            const response = await fetch("/api/courses", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: id
+                })
+            });
+
+            if (!response.ok) throw new Error("Failed to delete course");
+            setData(data.filter((record) => record.id !== id));
+            toast.success("Delete course successful!");
+        } catch (err) {
+            console.error("Error delete course:", err)
+            toast.error("Error delete course");
+        }
     };
 
     // Xoá nhiều khoá học - Khả năng không cần thiết
@@ -61,10 +90,7 @@ export default function CourseTable({ fetchData }: CourseTableProps) {
 
     const handleEdit = (record: CourseTableData) => {
         router.push(`/instructor/edit/${record.id}`)
-
-        // setEditingCourse(record);
-        // setIsDialogOpen(true);
-    };
+    };  
 
     // Mở dialog để tạo khóa học
     const openCreateDialog = () => {
@@ -88,7 +114,7 @@ export default function CourseTable({ fetchData }: CourseTableProps) {
                     <div>
                         <CreateCourseForm
                             onSubmit={handleCreate}
-                            // initialData={editingCourse}
+                        // initialData={editingCourse}
                         />
                     </div>
                 </DialogContent>

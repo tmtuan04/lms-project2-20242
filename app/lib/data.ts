@@ -1,5 +1,8 @@
 "use server";
 
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
 import sql from "./db";
 import {
   CourseCardProps,
@@ -8,9 +11,115 @@ import {
   Category,
   UserCourseCardProps,
   CourseTableData,
+  CourseTableDataBasic,
   Customer,
   RevenueChartData,
 } from "./definitions";
+
+// Get Chapter by ID Chapter
+export async function getChapterByID(id: string) {
+  try {
+    const chapter = await prisma.chapter.findUnique({
+      where: { id },
+      include: {
+        course: {
+          select: { title: true },
+        },
+        attachments: {
+          select: {
+            id: true,
+            name: true,
+            url: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!chapter) {
+      throw new Error(`Chapter with ID ${id} not found`);
+    }
+
+    return {
+      id: chapter.id,
+      title: chapter.title,
+      description: chapter.description ?? "",
+      videoUrl: chapter.videoUrl ?? "",
+      isLocked: chapter.isLocked,
+      courseId: chapter.courseId,
+      courseName: chapter.course.title,
+      attachments: chapter.attachments,
+      createdAt: chapter.createdAt,
+      updatedAt: chapter.updatedAt,
+    };
+  } catch (error) {
+    console.error("Error fetching chapter by ID:", error);
+    throw new Error("Failed to fetch chapter by ID");
+  }
+}
+
+
+// Get Course by ID Course
+export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
+  try {
+    const result = await sql<{
+      id: string;
+      title: string;
+      price: number;
+      description: string;
+      imageUrl: string;
+      categoryId: string;
+      instructorId: string;
+      chapters: {
+        id: string;
+        title: string;
+      }[];
+    }[]>`
+      SELECT 
+        c.id, 
+        c.title, 
+        c.price, 
+        c.description, 
+        c."imageUrl", 
+        c."categoryId", 
+        c."instructorId",
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', ch.id,
+              'title', ch.title
+            )
+          ) FILTER (WHERE ch.id IS NOT NULL),
+          '[]'
+        ) as chapters
+      FROM "Course" c
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      WHERE c.id = ${id}
+      GROUP BY c.id, c.title, c.price, c.description, c."imageUrl", c."categoryId", c."instructorId"
+    `;
+
+    if (result.length === 0) {
+      throw new Error(`Course with ID ${id} not found`);
+    }
+
+    const course = result[0];
+
+    return {
+      id: course.id,
+      title: course.title,
+      price: course.price,
+      description: course.description,
+      imageUrl: course.imageUrl,
+      categoryId: course.categoryId,
+      instructorId: course.instructorId,
+      chapters: course.chapters
+    };
+  } catch (error) {
+    console.error("Error fetching course by id:", error);
+    throw new Error("Failed to fetch course by ID");
+  }
+}
 
 // List courses mà mình là instructor
 export async function getCoursesByInstructor(
@@ -176,59 +285,103 @@ export async function getRevenueData(instructorId: string): Promise<RevenueChart
 }
 //------------------------------------------------------
 
-export async function getInitUserCourseCards(): Promise<UserCourseCardProps[]> {
-  return [
-    {
-      id: "course-001",
-      instructor: "Nguyễn Văn A",
-      title: "Lập trình React cơ bản",
-      category: "Lập trình web",
-      chaptersCount: 16,
-      completedChaptersCount: 0,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-    {
-      id: "course-002",
-      instructor: "Trần Thị B",
-      title: "Thiết kế UI/UX chuyên sâu",
-      category: "Thiết kế",
-      chaptersCount: 12,
-      completedChaptersCount: 5,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-    {
-      id: "course-003",
-      instructor: "Lê Văn C",
-      title: "Python cho người mới bắt đầu",
-      category: "Lập trình",
-      chaptersCount: 20,
-      completedChaptersCount: 20,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-    {
-      id: "course-004",
-      instructor: "Lê Văn C",
-      title: "Python cho người mới bắt đầu",
-      category: "Lập trình",
-      chaptersCount: 20,
-      completedChaptersCount: 20,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-    {
-      id: "course-005",
-      instructor: "Lê Văn C",
-      title: "Python cho người mới bắt đầu",
-      category: "Lập trình",
-      chaptersCount: 20,
-      completedChaptersCount: 20,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-  ];
+export async function getInitUserCourseCards(userId: string): Promise<UserCourseCardProps[]> {
+  try {
+    const data = await sql<
+      UserCourseCardProps[]>`
+      SELECT 
+        c.id AS id,
+        c.title,
+        u.name AS instructor,
+        cat.name AS category,
+        c."imageUrl" AS "imageUrl",
+        COUNT(DISTINCT ch.id) AS "chaptersCount",
+        COUNT(DISTINCT CASE 
+          WHEN cp."isCompleted" = true  THEN ch.id 
+          END) AS "completedChaptersCount"
+      FROM "CourseEnrollment" ce
+      JOIN "Course" c ON ce."courseId" = c.id
+      JOIN "User" u ON c."instructorId" = u.id
+      JOIN "Category" cat ON c."categoryId" = cat.id
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      LEFT JOIN "ChapterProgress" cp ON cp."chapterId" = ch.id AND cp."userId" = ce."userId"
+      WHERE ce."userId" = ${userId}
+      GROUP BY c.id, c.title, u.name, cat.name, c."imageUrl";
+        `;
+    return data.map((row: {
+      id: string
+      instructor: string
+      title: string
+      category: string
+      chaptersCount: number
+      completedChaptersCount: number
+      imageUrl: string
+    }) => ({
+      id: row.id,
+      instructor: row.instructor || 'Unknown Instructor',
+      title: row.title || 'Untitled Course',
+      category: row.category || 'Unknown Category',
+      chaptersCount: row.chaptersCount || 0,
+      completedChaptersCount: row.completedChaptersCount || 0,
+      imageUrl: row.imageUrl || 'https://img.freepik.com/premium-vector/print_1126632-1359.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_items_boosted&w=740',
+    }))
+  }
+  catch (error) {
+    console.log("Error from fetch Course Dashboard:", error);
+    throw new Error("Failes to fetch user course cards");
+  }
+  // return [
+  //   {
+  //     id: "course-001",
+  //     instructor: "Nguyễn Văn A",
+  //     title: "Lập trình React cơ bản",
+  //     category: "Lập trình web",
+  //     chaptersCount: 16,
+  //     completedChaptersCount: 0,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  //   {
+  //     id: "course-002",
+  //     instructor: "Trần Thị B",
+  //     title: "Thiết kế UI/UX chuyên sâu",
+  //     category: "Thiết kế",
+  //     chaptersCount: 12,
+  //     completedChaptersCount: 5,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  //   {
+  //     id: "course-003",
+  //     instructor: "Lê Văn C",
+  //     title: "Python cho người mới bắt đầu",
+  //     category: "Lập trình",
+  //     chaptersCount: 20,
+  //     completedChaptersCount: 20,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  //   {
+  //     id: "course-004",
+  //     instructor: "Lê Văn C",
+  //     title: "Python cho người mới bắt đầu",
+  //     category: "Lập trình",
+  //     chaptersCount: 20,
+  //     completedChaptersCount: 20,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  //   {
+  //     id: "course-005",
+  //     instructor: "Lê Văn C",
+  //     title: "Python cho người mới bắt đầu",
+  //     category: "Lập trình",
+  //     chaptersCount: 20,
+  //     completedChaptersCount: 20,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  // ];
 }
 
 // Check isInstructor - Sau bỏ cái này đi

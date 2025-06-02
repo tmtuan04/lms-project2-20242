@@ -9,7 +9,6 @@ import { useEffect, useState } from "react"
 export default function TableCoursePage() {
     const [courses, setCourses] = useState<CourseTableData[]>([])
 
-    // Zustand oke
     const user = useUserStore((state) => state.user)
 
     useEffect(() => {

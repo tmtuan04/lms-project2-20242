@@ -56,7 +56,7 @@ export default function Browse() {
   return (
     <div className="flex flex-col h-full">
       {/* Category Tabs Section */}
-      <div className="flex gap-4 p-3 border-gray-200 bg-white">
+      <div className="flex flex-wrap gap-4 p-3 border-gray-200 bg-white">
         {categories.map((category) => (
           <Button
             key={category.id}
@@ -75,7 +75,7 @@ export default function Browse() {
 
       {/* Main Content Section */}
       <main className="flex-1">
-        <div className="flex justify-center p-5">
+        <div className="flex p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredCourses.map((course) => (
               <Card

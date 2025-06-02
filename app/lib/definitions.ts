@@ -3,8 +3,6 @@ export interface Category {
   name: string
 }
 
-// 4 cái này sử dụng cho lưu trữ localStorage
-
 type ChapterDocument = {
   name: string;
   type: string;
@@ -183,6 +181,20 @@ export interface CourseTableData {
   title: string;
   price: number;
   status: 'Published' | 'Draft';
+}
+
+export interface CourseTableDataBasic {
+  id: string;
+  title: string;
+  price: number;
+  description: string;
+  imageUrl: string;
+  categoryId: string;
+  instructorId: string;
+  chapters: {
+    id: string;
+    title: string;
+  }[];
 }
 
 export interface UserCourseCardProps {
