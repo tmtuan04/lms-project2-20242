@@ -55,7 +55,9 @@ export default function ChapterContent({ chapter, courseId }: ChapterContentProp
       const progress = await toggleChapterProgress(chapter.id, user.id);
       setIsCompleted(progress.isCompleted);
       toast.success(progress.isCompleted ? "Chapter marked as complete!" : "Chapter marked as incomplete");
-    } catch (error) {
+    } catch (err) {
+      const error = err as Error;
+      console.error(error);
       toast.error("Failed to update progress");
     } finally {
       setIsLoading(false);
