@@ -1,17 +1,42 @@
+"use client";
 import { getInitUserCourseCards } from "@/app/lib/data";
 import UserCourseCard from "../_components/UserCourseCard";
 import { Clock, CircleCheckBig } from "lucide-react";
+import { useUserStore } from "@/app/stores/useUserStore";
+import { useState, useEffect } from "react";
+import { UserCourseCardProps } from "@/app/lib/definitions";
 
-export default async function DashboardPage() {
-  const userCourseCards = await getInitUserCourseCards();
+
+export default function DashboardPage() {
+  const user = useUserStore((state) => state.user);
+  const [userCourseCards, setUserCourseCards] = useState<UserCourseCardProps[]>([])
+  // const userCourseCards = await getInitUserCourseCards(userId);
+
+  useEffect(() => {
+    if (!user) {
+      return
+    }
+    const fetchData = async () => {
+      // setIsLoading(true)
+      const data = await getInitUserCourseCards(user.id);
+      setUserCourseCards(data);
+      // setIsLoading(false)
+    }
+    fetchData()
+  }, [user]);
 
   const completedCourses = userCourseCards.filter(
-    (course) => course.completedChaptersCount === course.chaptersCount
+    (course) =>
+      course.chaptersCount > 0 &&
+      course.completedChaptersCount === course.chaptersCount
   );
 
   const inProgressCourses = userCourseCards.filter(
-    (course) => course.completedChaptersCount < course.chaptersCount
+    (course) =>
+      course.chaptersCount > 0 &&
+      course.completedChaptersCount < course.chaptersCount
   );
+
 
   return (
     <div className="flex flex-col h-full">
