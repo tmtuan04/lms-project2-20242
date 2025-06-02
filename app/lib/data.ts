@@ -527,6 +527,7 @@ export async function fetchCourseById(courseId: string) {
               'title', ch.title,
               'description', ch.description,
               'videoUrl', ch."videoUrl",
+              'isLocked', ch."isLocked",
               'attachments', (
                 SELECT json_agg(
                   json_build_object(

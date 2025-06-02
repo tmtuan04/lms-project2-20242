@@ -38,7 +38,7 @@ export default function Sidebar({ courseId, chapters }: SidebarProps) {
               ) : (
                 <Lock className={clsx("h-4 w-4", isActive ? "text-[#255C6E]" : "")} />
               )}
-              {`${isFirstChapter ? "Introduction" : `Chapter ${index + 1}`}: ${chapter.title}`}
+              {chapter.title}
             </div>
           </Link>
         );

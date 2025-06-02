@@ -110,6 +110,9 @@ importers:
       recharts:
         specifier: ^2.15.3
         version: 2.15.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      sonner:
+        specifier: ^2.0.5
+        version: 2.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       svix:
         specifier: ^1.64.0
         version: 1.64.0
@@ -3351,6 +3354,12 @@ packages:
     resolution: {integrity: sha512-Sj51kE1zC7zh6TDlNNz0/Jn1n5HiHdoQErxO8jLtnyrkJW/M5PrI7x05uDgY3BO7OUQYKCvmeMurW6BPUdwEOw==}
     engines: {node: '>=18'}
 
+  sonner@2.0.5:
+    resolution: {integrity: sha512-YwbHQO6cSso3HBXlbCkgrgzDNIhws14r4MO87Ofy+cV2X7ES4pOoAK3+veSmVTvqNx1BWUxlhPmZzP00Crk2aQ==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
@@ -6220,6 +6229,7 @@ snapshots:
       react-hot-toast: 2.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-icons: 5.5.0(react@19.1.0)
       recharts: 2.15.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      sonner: 2.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       svix: 1.64.0
       tailwind-merge: 3.1.0
       tailwindcss-animate: 1.0.7(tailwindcss@4.1.1)
@@ -7107,6 +7117,11 @@ snapshots:
       map-obj: 4.3.0
       snake-case: 3.0.4
       type-fest: 4.39.0
+
+  sonner@2.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   source-map-js@1.2.1: {}
 
