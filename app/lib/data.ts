@@ -14,9 +14,23 @@ import {
   CourseTableDataBasic,
   Customer,
   RevenueChartData,
-  
 } from "./definitions";
 
+export async function checkUserEnrolled(
+  courseId: string,
+  userId: string
+): Promise<boolean> {
+  const enrollment = await prisma.courseEnrollment.findUnique({
+    where: {
+      userId_courseId: {
+        userId,
+        courseId,
+      },
+    },
+  });
+
+  return !!enrollment;
+}
 // Get Chapter by ID Chapter
 export async function getChapterByID(id: string) {
   try {
@@ -60,23 +74,24 @@ export async function getChapterByID(id: string) {
   }
 }
 
-
 // Get Course by ID Course
 export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
   try {
-    const result = await sql<{
-      id: string;
-      title: string;
-      price: number;
-      description: string;
-      imageUrl: string;
-      categoryId: string;
-      instructorId: string;
-      chapters: {
+    const result = await sql<
+      {
         id: string;
         title: string;
-      }[];
-    }[]>`
+        price: number;
+        description: string;
+        imageUrl: string;
+        categoryId: string;
+        instructorId: string;
+        chapters: {
+          id: string;
+          title: string;
+        }[];
+      }[]
+    >`
       SELECT 
         c.id, 
         c.title, 
@@ -114,7 +129,7 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
       imageUrl: course.imageUrl,
       categoryId: course.categoryId,
       instructorId: course.instructorId,
-      chapters: course.chapters
+      chapters: course.chapters,
     };
   } catch (error) {
     console.error("Error fetching course by id:", error);
@@ -157,9 +172,7 @@ export async function getCoursesByInstructor(
 
 //--------------Fetch data cho analytics------------------
 // 4 card
-export async function fetchCardAnalys(
-  instructorId: string
-) {
+export async function fetchCardAnalys(instructorId: string) {
   try {
     const courseCountPromise = sql`SELECT COUNT(*)
       FROM "Course" c
@@ -189,18 +202,22 @@ export async function fetchCardAnalys(
     //   WHERE c."instructorId" = ${instructorId}
     // `;
 
-
-    const [courseCountResult, customerCountResult, invoiceCountResult, totalPaidInvoicesResult] = await Promise.all([
+    const [
+      courseCountResult,
+      customerCountResult,
+      invoiceCountResult,
+      totalPaidInvoicesResult,
+    ] = await Promise.all([
       courseCountPromise,
       customerCountPromise,
       invoiceCountPromise,
       totalPaidInvoicesPromise,
     ]);
 
-    const courseCount = Number(courseCountResult[0]?.count ?? '0');
-    const customerCount = Number(customerCountResult[0]?.count ?? '0');
-    const invoiceCount = Number(invoiceCountResult[0]?.count ?? '0');
-    const totalPaidInvoices = Number(totalPaidInvoicesResult[0]?.total ?? '0');
+    const courseCount = Number(courseCountResult[0]?.count ?? "0");
+    const customerCount = Number(customerCountResult[0]?.count ?? "0");
+    const invoiceCount = Number(invoiceCountResult[0]?.count ?? "0");
+    const totalPaidInvoices = Number(totalPaidInvoicesResult[0]?.total ?? "0");
 
     return {
       customerCount,
@@ -208,7 +225,6 @@ export async function fetchCardAnalys(
       invoiceCount,
       totalPaidInvoices,
     };
-
   } catch (error) {
     console.error("Error:", error);
     throw new Error("Failed to fetch by instructor");
@@ -221,7 +237,14 @@ export async function getRecentCustomer(
 ): Promise<Customer[]> {
   try {
     const data = await sql<
-      { id: string; name: string; email: string; image_url: string; amount: number; course_title: string }[]
+      {
+        id: string;
+        name: string;
+        email: string;
+        image_url: string;
+        amount: number;
+        course_title: string;
+      }[]
     >`
       SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, p."amount"::NUMERIC, c."title" AS course_title
       FROM "Payment" p
@@ -232,15 +255,25 @@ export async function getRecentCustomer(
       LIMIT 4
     `;
 
-    return data.map((row: { id: string; name: string; email: string; image_url: string; amount: number; course_title: string }) => ({
-      id: row.id,
-      name: row.name || 'Anomymous',
-      amount: row.amount || 0,
-      email: row.email || '',
-      course_title: row.course_title || '',
-      image_url: row.image_url || 'https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_hybrid&w=740',
-    }));
-
+    return data.map(
+      (row: {
+        id: string;
+        name: string;
+        email: string;
+        image_url: string;
+        amount: number;
+        course_title: string;
+      }) => ({
+        id: row.id,
+        name: row.name || "Anomymous",
+        amount: row.amount || 0,
+        email: row.email || "",
+        course_title: row.course_title || "",
+        image_url:
+          row.image_url ||
+          "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_hybrid&w=740",
+      })
+    );
   } catch (error) {
     console.error("Error fetch recent customers:", error);
     throw new Error("Failed to fetch recent customers");
@@ -249,14 +282,27 @@ export async function getRecentCustomer(
 
 //Chart revenue
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
-export async function getRevenueData(instructorId: string): Promise<RevenueChartData[]> {
+export async function getRevenueData(
+  instructorId: string
+): Promise<RevenueChartData[]> {
   try {
-    const data = await sql<{ month: string; revenue: number }[]>
-      `WITH months AS (
+    const data = await sql<
+      { month: string; revenue: number }[]
+    >`WITH months AS (
         SELECT to_char(generate_series(1, extract(month from CURRENT_DATE)::int), 'FM00') AS month
       )
       SELECT
@@ -277,19 +323,19 @@ export async function getRevenueData(instructorId: string): Promise<RevenueChart
     return data.map((row: { month: string; revenue: number }) => ({
       month: MONTHS[parseInt(row.month, 10) - 1],
       venenue: Number(row.revenue),
-    }))
-  }
-  catch (error) {
+    }));
+  } catch (error) {
     console.log("Error from fetch Revenue Chart:", error);
     throw new Error("Failes to fetch revenue chart data");
   }
 }
 //------------------------------------------------------
 
-export async function getInitUserCourseCards(userId: string): Promise<UserCourseCardProps[]> {
+export async function getInitUserCourseCards(
+  userId: string
+): Promise<UserCourseCardProps[]> {
   try {
-    const data = await sql<
-      UserCourseCardProps[]>`
+    const data = await sql<UserCourseCardProps[]>`
       SELECT 
         c.id AS id,
         c.title,
@@ -309,25 +355,28 @@ export async function getInitUserCourseCards(userId: string): Promise<UserCourse
       WHERE ce."userId" = ${userId}
       GROUP BY c.id, c.title, u.name, cat.name, c."imageUrl";
         `;
-    return data.map((row: {
-      id: string
-      instructor: string
-      title: string
-      category: string
-      chaptersCount: number
-      completedChaptersCount: number
-      imageUrl: string
-    }) => ({
-      id: row.id,
-      instructor: row.instructor || 'Unknown Instructor',
-      title: row.title || 'Untitled Course',
-      category: row.category || 'Unknown Category',
-      chaptersCount: row.chaptersCount || 0,
-      completedChaptersCount: row.completedChaptersCount || 0,
-      imageUrl: row.imageUrl || 'https://img.freepik.com/premium-vector/print_1126632-1359.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_items_boosted&w=740',
-    }))
-  }
-  catch (error) {
+    return data.map(
+      (row: {
+        id: string;
+        instructor: string;
+        title: string;
+        category: string;
+        chaptersCount: number;
+        completedChaptersCount: number;
+        imageUrl: string;
+      }) => ({
+        id: row.id,
+        instructor: row.instructor || "Unknown Instructor",
+        title: row.title || "Untitled Course",
+        category: row.category || "Unknown Category",
+        chaptersCount: row.chaptersCount || 0,
+        completedChaptersCount: row.completedChaptersCount || 0,
+        imageUrl:
+          row.imageUrl ||
+          "https://img.freepik.com/premium-vector/print_1126632-1359.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_items_boosted&w=740",
+      })
+    );
+  } catch (error) {
     console.log("Error from fetch Course Dashboard:", error);
     throw new Error("Failes to fetch user course cards");
   }
@@ -439,14 +488,15 @@ export const fetchCourses = async (query?: string) => {
       LEFT JOIN "Chapter" ch ON ch."courseId" = c.id  -- Join với bảng Chapter
       WHERE 
         c."isPublished" = true
-        ${query
-        ? sql`AND (
+        ${
+          query
+            ? sql`AND (
           LOWER(c.title) LIKE ${`%${query.toLowerCase()}%`} OR
           LOWER(u.name) LIKE ${`%${query.toLowerCase()}%`} OR
           LOWER(cat.name) LIKE ${`%${query.toLowerCase()}%`}
         )`
-        : sql``
-      }
+            : sql``
+        }
       GROUP BY c.id, c."courseUrl", c.title, cat.name, c.price, c."imageUrl", u.name
       ORDER BY c."createdAt" DESC
     `;

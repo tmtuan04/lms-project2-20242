@@ -1,4 +1,4 @@
-  import { fetchCourseById } from "@/app/lib/data";
+import { fetchCourseById } from "@/app/lib/data";
 import { redirect } from "next/navigation";
 import { type NextPage } from "next";
 import MarkButton from "../../components/MarkButton";
