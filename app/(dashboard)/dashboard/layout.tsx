@@ -7,14 +7,6 @@ export const metadata: Metadata = {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    // const { userId } = useAuth();
-    // const fetchUser = useUserStore((s) => s.fetchUser)
-
-    // useEffect(() => {
-    //     if (userId) {
-    //         fetchUser(userId)
-    //     }
-    // }, [userId, fetchUser])
 
     return (
         <div className="flex flex-col h-screen">

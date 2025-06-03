@@ -11,9 +11,26 @@ import {
   Category,
   UserCourseCardProps,
   CourseTableData,
-  CourseTableDataBasic
+  CourseTableDataBasic,
+  Customer,
+  RevenueChartData,
 } from "./definitions";
 
+export async function checkUserEnrolled(
+  courseId: string,
+  userId: string
+): Promise<boolean> {
+  const enrollment = await prisma.courseEnrollment.findUnique({
+    where: {
+      userId_courseId: {
+        userId,
+        courseId,
+      },
+    },
+  });
+
+  return !!enrollment;
+}
 // Get Chapter by ID Chapter
 export async function getChapterByID(id: string) {
   try {
@@ -21,7 +38,7 @@ export async function getChapterByID(id: string) {
       where: { id },
       include: {
         course: {
-          select: { title: true },
+          select: { title: true, isPublished: true },
         },
         attachments: {
           select: {
@@ -47,6 +64,7 @@ export async function getChapterByID(id: string) {
       isLocked: chapter.isLocked,
       courseId: chapter.courseId,
       courseName: chapter.course.title,
+      isPublished: chapter.course.isPublished,
       attachments: chapter.attachments,
       createdAt: chapter.createdAt,
       updatedAt: chapter.updatedAt,
@@ -57,23 +75,25 @@ export async function getChapterByID(id: string) {
   }
 }
 
-
 // Get Course by ID Course
 export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
   try {
-    const result = await sql<{
-      id: string;
-      title: string;
-      price: number;
-      description: string;
-      imageUrl: string;
-      categoryId: string;
-      instructorId: string;
-      chapters: {
+    const result = await sql<
+      {
         id: string;
         title: string;
-      }[];
-    }[]>`
+        price: number;
+        description: string;
+        imageUrl: string;
+        isPublished: boolean;
+        categoryId: string;
+        instructorId: string;
+        chapters: {
+          id: string;
+          title: string;
+        }[];
+      }[]
+    >`
       SELECT 
         c.id, 
         c.title, 
@@ -82,6 +102,7 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
         c."imageUrl", 
         c."categoryId", 
         c."instructorId",
+        c."isPublished",
         COALESCE(
           json_agg(
             json_build_object(
@@ -111,7 +132,8 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
       imageUrl: course.imageUrl,
       categoryId: course.categoryId,
       instructorId: course.instructorId,
-      chapters: course.chapters
+      isPublished: course.isPublished,
+      chapters: course.chapters,
     };
   } catch (error) {
     console.error("Error fetching course by id:", error);
@@ -152,59 +174,268 @@ export async function getCoursesByInstructor(
   }
 }
 
-export async function getInitUserCourseCards(): Promise<UserCourseCardProps[]> {
-  return [
-    {
-      id: "course-001",
-      instructor: "Nguyễn Văn A",
-      title: "Lập trình React cơ bản",
-      category: "Lập trình web",
-      chaptersCount: 16,
-      completedChaptersCount: 0,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-    {
-      id: "course-002",
-      instructor: "Trần Thị B",
-      title: "Thiết kế UI/UX chuyên sâu",
-      category: "Thiết kế",
-      chaptersCount: 12,
-      completedChaptersCount: 5,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-    {
-      id: "course-003",
-      instructor: "Lê Văn C",
-      title: "Python cho người mới bắt đầu",
-      category: "Lập trình",
-      chaptersCount: 20,
-      completedChaptersCount: 20,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-    {
-      id: "course-004",
-      instructor: "Lê Văn C",
-      title: "Python cho người mới bắt đầu",
-      category: "Lập trình",
-      chaptersCount: 20,
-      completedChaptersCount: 20,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-    {
-      id: "course-005",
-      instructor: "Lê Văn C",
-      title: "Python cho người mới bắt đầu",
-      category: "Lập trình",
-      chaptersCount: 20,
-      completedChaptersCount: 20,
-      imageUrl:
-        "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-    },
-  ];
+//--------------Fetch data cho analytics------------------
+// 4 card
+export async function fetchCardAnalys(instructorId: string) {
+  try {
+    const courseCountPromise = sql`SELECT COUNT(*)
+      FROM "Course" c
+      WHERE c."instructorId" = ${instructorId}
+    `;
+    const customerCountPromise = sql`SELECT COUNT(DISTINCT p."userId")
+      FROM "Course" c
+      JOIN "Payment" p ON c.id = p."courseId"
+      WHERE c."instructorId" = ${instructorId}
+    `;
+    const invoiceCountPromise = sql`SELECT COUNT(*)
+      FROM "Course" c
+      JOIN "Payment" p ON c.id = p."courseId"
+      WHERE c."instructorId" = ${instructorId}
+    `;
+    const totalPaidInvoicesPromise = sql`
+      SELECT SUM(p."amount" ::NUMERIC) as total
+      FROM "Course" c
+      JOIN "Payment" p ON c.id = p."courseId"
+      WHERE c."instructorId" = ${instructorId} and p."status" = 'SUCCESS'
+    `;
+    //Fetch theo CourseEnrollment
+    // const customerCountPromise = sql`
+    //   SELECT COUNT(DISTINCT ce."userId")
+    //   FROM "Course" c
+    //   JOIN "CourseEnrollment" ce ON c.id = ce."courseId"
+    //   WHERE c."instructorId" = ${instructorId}
+    // `;
+
+    const [
+      courseCountResult,
+      customerCountResult,
+      invoiceCountResult,
+      totalPaidInvoicesResult,
+    ] = await Promise.all([
+      courseCountPromise,
+      customerCountPromise,
+      invoiceCountPromise,
+      totalPaidInvoicesPromise,
+    ]);
+
+    const courseCount = Number(courseCountResult[0]?.count ?? "0");
+    const customerCount = Number(customerCountResult[0]?.count ?? "0");
+    const invoiceCount = Number(invoiceCountResult[0]?.count ?? "0");
+    const totalPaidInvoices = Number(totalPaidInvoicesResult[0]?.total ?? "0");
+
+    return {
+      customerCount,
+      courseCount,
+      invoiceCount,
+      totalPaidInvoices,
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    throw new Error("Failed to fetch by instructor");
+  }
+}
+
+// Recent customers: 4 customer co payment moi nhat
+export async function getRecentCustomer(
+  instructorId: string
+): Promise<Customer[]> {
+  try {
+    const data = await sql<
+      {
+        id: string;
+        name: string;
+        email: string;
+        image_url: string;
+        amount: number;
+        course_title: string;
+      }[]
+    >`
+      SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, p."amount"::NUMERIC, c."title" AS course_title
+      FROM "Payment" p
+      JOIN "User" u ON p."userId" = u.id
+      JOIN "Course" c ON p."courseId" = c.id
+      WHERE p."status" = 'SUCCESS' and  c."instructorId" = ${instructorId}
+      ORDER BY p."updatedAt" DESC
+      LIMIT 4
+    `;
+
+    return data.map(
+      (row: {
+        id: string;
+        name: string;
+        email: string;
+        image_url: string;
+        amount: number;
+        course_title: string;
+      }) => ({
+        id: row.id,
+        name: row.name || "Anomymous",
+        amount: row.amount || 0,
+        email: row.email || "",
+        course_title: row.course_title || "",
+        image_url:
+          row.image_url ||
+          "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_hybrid&w=740",
+      })
+    );
+  } catch (error) {
+    console.error("Error fetch recent customers:", error);
+    throw new Error("Failed to fetch recent customers");
+  }
+}
+
+//Chart revenue
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+export async function getRevenueData(
+  instructorId: string
+): Promise<RevenueChartData[]> {
+  try {
+    const data = await sql<
+      { month: string; revenue: number }[]
+    >`WITH months AS (
+        SELECT to_char(generate_series(1, extract(month from CURRENT_DATE)::int), 'FM00') AS month
+      )
+      SELECT
+        m.month,
+        COALESCE(SUM(
+          CASE
+            WHEN p."status" = 'SUCCESS' AND c."instructorId" = ${instructorId}
+            THEN p."amount"::NUMERIC
+            ELSE 0
+          END
+        ), 0) AS revenue
+      FROM months m
+      LEFT JOIN "Payment" p ON to_char(p."updatedAt", 'MM') = m.month
+      LEFT JOIN "Course" c ON c.id = p."courseId"
+      GROUP BY m.month
+      ORDER BY m.month;
+      `;
+    return data.map((row: { month: string; revenue: number }) => ({
+      month: MONTHS[parseInt(row.month, 10) - 1],
+      venenue: Number(row.revenue),
+    }));
+  } catch (error) {
+    console.log("Error from fetch Revenue Chart:", error);
+    throw new Error("Failes to fetch revenue chart data");
+  }
+}
+//------------------------------------------------------
+
+export async function getInitUserCourseCards(
+  userId: string
+): Promise<UserCourseCardProps[]> {
+  try {
+    const data = await sql<UserCourseCardProps[]>`
+      SELECT 
+        c.id AS id,
+        c.title,
+        u.name AS instructor,
+        cat.name AS category,
+        c."imageUrl" AS "imageUrl",
+        COUNT(DISTINCT ch.id) AS "chaptersCount",
+        COUNT(DISTINCT CASE 
+          WHEN cp."isCompleted" = true  THEN ch.id 
+          END) AS "completedChaptersCount"
+      FROM "CourseEnrollment" ce
+      JOIN "Course" c ON ce."courseId" = c.id
+      JOIN "User" u ON c."instructorId" = u.id
+      JOIN "Category" cat ON c."categoryId" = cat.id
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      LEFT JOIN "ChapterProgress" cp ON cp."chapterId" = ch.id AND cp."userId" = ce."userId"
+      WHERE ce."userId" = ${userId}
+      GROUP BY c.id, c.title, u.name, cat.name, c."imageUrl";
+        `;
+    return data.map(
+      (row: {
+        id: string;
+        instructor: string;
+        title: string;
+        category: string;
+        chaptersCount: number;
+        completedChaptersCount: number;
+        imageUrl: string;
+      }) => ({
+        id: row.id,
+        instructor: row.instructor || "Unknown Instructor",
+        title: row.title || "Untitled Course",
+        category: row.category || "Unknown Category",
+        chaptersCount: row.chaptersCount || 0,
+        completedChaptersCount: row.completedChaptersCount || 0,
+        imageUrl:
+          row.imageUrl ||
+          "https://img.freepik.com/premium-vector/print_1126632-1359.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_items_boosted&w=740",
+      })
+    );
+  } catch (error) {
+    console.log("Error from fetch Course Dashboard:", error);
+    throw new Error("Failes to fetch user course cards");
+  }
+  // return [
+  //   {
+  //     id: "course-001",
+  //     instructor: "Nguyễn Văn A",
+  //     title: "Lập trình React cơ bản",
+  //     category: "Lập trình web",
+  //     chaptersCount: 16,
+  //     completedChaptersCount: 0,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  //   {
+  //     id: "course-002",
+  //     instructor: "Trần Thị B",
+  //     title: "Thiết kế UI/UX chuyên sâu",
+  //     category: "Thiết kế",
+  //     chaptersCount: 12,
+  //     completedChaptersCount: 5,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  //   {
+  //     id: "course-003",
+  //     instructor: "Lê Văn C",
+  //     title: "Python cho người mới bắt đầu",
+  //     category: "Lập trình",
+  //     chaptersCount: 20,
+  //     completedChaptersCount: 20,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  //   {
+  //     id: "course-004",
+  //     instructor: "Lê Văn C",
+  //     title: "Python cho người mới bắt đầu",
+  //     category: "Lập trình",
+  //     chaptersCount: 20,
+  //     completedChaptersCount: 20,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  //   {
+  //     id: "course-005",
+  //     instructor: "Lê Văn C",
+  //     title: "Python cho người mới bắt đầu",
+  //     category: "Lập trình",
+  //     chaptersCount: 20,
+  //     completedChaptersCount: 20,
+  //     imageUrl:
+  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
+  //   },
+  // ];
 }
 
 // Check isInstructor - Sau bỏ cái này đi
@@ -300,6 +531,7 @@ export async function fetchCourseById(courseId: string) {
               'title', ch.title,
               'description', ch.description,
               'videoUrl', ch."videoUrl",
+              'isLocked', ch."isLocked",
               'attachments', (
                 SELECT json_agg(
                   json_build_object(

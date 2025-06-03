@@ -3,9 +3,16 @@ export interface Category {
   name: string
 }
 
-// 4 cái này sử dụng cho lưu trữ localStorage
-
 type ChapterDocument = {
+  id?: string;
+  name: string;
+  type: string;
+  url: string;
+}
+
+export type Document = {
+  id?: string;
+  publicId?: string;
   name: string;
   type: string;
   url: string;
@@ -69,14 +76,14 @@ type Chapter = {
   title: string;
   isEditing?: boolean;
   video?: {
-      file: File | null;
-      url: string;
-      preview: string;
+    file: File | null;
+    url: string;
+    preview: string;
   };
   documents?: {
-      name: string;
-      type: string;
-      url: string;
+    name: string;
+    type: string;
+    url: string;
   }[];
   accessMode?: 'locked' | 'free';
 }
@@ -193,6 +200,7 @@ export interface CourseTableDataBasic {
   imageUrl: string;
   categoryId: string;
   instructorId: string;
+  isPublished: boolean;
   chapters: {
     id: string;
     title: string;
@@ -207,4 +215,18 @@ export interface UserCourseCardProps {
   chaptersCount: number
   completedChaptersCount: number
   imageUrl: string
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  image_url: string;
+  amount: number;
+  course_title: string;
+}
+
+export interface RevenueChartData {
+  month: string
+  venenue: number
 }

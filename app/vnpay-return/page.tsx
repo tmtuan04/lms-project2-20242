@@ -8,6 +8,7 @@ export default function VNPayReturnPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [status, setStatus] = useState<"pending" | "success" | "error">("pending");
   const [isLoading, setIsLoading] = useState(true);
+  const [countdown, setCountdown] = useState(2);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -17,15 +18,26 @@ export default function VNPayReturnPage() {
         const query = searchParams.toString();
         const res = await fetch(`/api/vnpay-return?${query}`);
         const data = await res.json();
+
+        // Log
+        console.log("Data from VNPay:", data)
         
         setMessage(data.message);
         setStatus(data.success ? "success" : "error");
         
-        // Optional: Redirect to course page after successful payment
+
+        // Lỗi vì data không trả về courseId
         if (data.success && data.courseId) {
-          setTimeout(() => {
-            router.push(`/${data.courseId}`);
-          }, 2000);
+          const timer = setInterval(() => {
+            setCountdown((prev) => {
+              if (prev <= 1) {
+                clearInterval(timer);
+                router.push(`/${data.courseId}/chapters/1`);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
         }
       } catch (error) {
         const err = error as Error;
@@ -51,17 +63,24 @@ export default function VNPayReturnPage() {
           <p className="text-lg text-gray-500">Đang xác minh thanh toán...</p>
         </div>
       ) : (
-        <p
-          className={`text-lg ${
-            status === "pending"
-              ? "text-gray-500"
-              : status === "success"
-              ? "text-green-600"
-              : "text-red-600"
-          }`}
-        >
-          {message}
-        </p>
+        <div className="flex flex-col items-center space-y-2">
+          <p
+            className={`text-lg ${
+              status === "pending"
+                ? "text-gray-500"
+                : status === "success"
+                ? "text-green-600"
+                : "text-red-600"
+            }`}
+          >
+            {message}
+          </p>
+          {status === "success" && countdown > 0 && (
+            <p className="text-sm text-gray-500">
+              Chuyển hướng trong {countdown} giây...
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
