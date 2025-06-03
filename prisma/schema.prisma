@@ -143,21 +143,6 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// // Attachment Model
-// model Attachment {
-//   id String @id @default(uuid())
-//   name String
-//   url String @db.Text
-
-//   courseId String
-//   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   @@index([courseId])
-// }
-
 model ChapterProgress {
   id          String   @id @default(uuid())
   userId      String
@@ -172,4 +157,3 @@ model ChapterProgress {
   @@index([userId])
   @@index([chapterId])
 }
-

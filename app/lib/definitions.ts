@@ -4,6 +4,15 @@ export interface Category {
 }
 
 type ChapterDocument = {
+  id?: string;
+  name: string;
+  type: string;
+  url: string;
+}
+
+export type Document = {
+  id?: string;
+  publicId?: string;
   name: string;
   type: string;
   url: string;
@@ -191,6 +200,7 @@ export interface CourseTableDataBasic {
   imageUrl: string;
   categoryId: string;
   instructorId: string;
+  isPublished: boolean;
   chapters: {
     id: string;
     title: string;

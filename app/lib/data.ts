@@ -38,7 +38,7 @@ export async function getChapterByID(id: string) {
       where: { id },
       include: {
         course: {
-          select: { title: true },
+          select: { title: true, isPublished: true },
         },
         attachments: {
           select: {
@@ -64,6 +64,7 @@ export async function getChapterByID(id: string) {
       isLocked: chapter.isLocked,
       courseId: chapter.courseId,
       courseName: chapter.course.title,
+      isPublished: chapter.course.isPublished,
       attachments: chapter.attachments,
       createdAt: chapter.createdAt,
       updatedAt: chapter.updatedAt,
@@ -84,6 +85,7 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
         price: number;
         description: string;
         imageUrl: string;
+        isPublished: boolean;
         categoryId: string;
         instructorId: string;
         chapters: {
@@ -100,6 +102,7 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
         c."imageUrl", 
         c."categoryId", 
         c."instructorId",
+        c."isPublished",
         COALESCE(
           json_agg(
             json_build_object(
@@ -129,6 +132,7 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
       imageUrl: course.imageUrl,
       categoryId: course.categoryId,
       instructorId: course.instructorId,
+      isPublished: course.isPublished,
       chapters: course.chapters,
     };
   } catch (error) {
