@@ -15,6 +15,7 @@ import {
   Customer,
   RevenueChartData,
   CourseInfo,
+  CourseRevenueItem,
 } from "./definitions";
 
 export async function checkUserEnrolled(
@@ -331,6 +332,63 @@ export async function getRevenueData(
   } catch (error) {
     console.log("Error from fetch Revenue Chart:", error);
     throw new Error("Failes to fetch revenue chart data");
+  }
+}
+//------------------------------------------------------
+
+//------------------------------------------------------
+
+export async function getCourseRevenueDataByMonth(
+  instructorId: string
+): Promise<CourseRevenueItem[]> {
+  try {
+    const data = await sql<
+      { month: string; courseName: string; revenue: number }[]
+    >`
+      WITH months AS (
+        SELECT to_char(generate_series(1, extract(month from CURRENT_DATE)::int), 'FM00') AS month
+      )
+      SELECT
+        m.month,
+        c."title" as "courseName",
+        COALESCE(SUM(
+          CASE
+            WHEN p."status" = 'SUCCESS'
+            THEN p."amount"::NUMERIC
+            ELSE 0
+          END
+        ), 0) AS revenue
+      FROM months m
+      CROSS JOIN (
+        SELECT DISTINCT c."title", c."id"
+        FROM "Course" c
+        WHERE c."instructorId" = ${instructorId}
+      ) c
+      LEFT JOIN "Payment" p ON to_char(p."updatedAt", 'MM') = m.month AND p."courseId" = c."id"
+      GROUP BY m.month, c."title"
+      ORDER BY m.month;
+    `;
+
+    const monthMap = new Map<string, { [course: string]: number }>();
+
+    data.forEach(({ month, courseName, revenue }) => {
+      const monthName = MONTHS[parseInt(month, 10) - 1];
+      if (!monthMap.has(monthName)) {
+        monthMap.set(monthName, {});
+      }
+      monthMap.get(monthName)![courseName] = Number(revenue);
+    });
+
+    const result: CourseRevenueItem[] = [];
+
+    for (const [month, courseRevenues] of monthMap.entries()) {
+      result.push({ month, ...courseRevenues });
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching course revenue by month:", error);
+    throw new Error("Failed to fetch course revenue chart data");
   }
 }
 //------------------------------------------------------

@@ -221,6 +221,8 @@ export interface RevenueChartData {
   month: string
   venenue: number
 }
+export type CourseRevenueItem = { month: string } & Record<string, number | string>;
+
 
 export interface CourseInfo {
   id: string;

@@ -3,7 +3,7 @@
 // Demo with shadCN UI
 
 import { TrendingUp, TrendingDown } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, LineChart, Line, XAxis } from "recharts"
 import { useState, useEffect } from "react"
 
 import {
@@ -16,30 +16,39 @@ import {
 } from "@/components/ui/card"
 
 import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+
+import {
     ChartConfig,
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
 
-import { RevenueChartData } from "@/app/lib/definitions"
-import { getRevenueData } from "@/app/lib/data"
+// import { RevenueChartData } from "@/app/lib/definitions"
+import { getRevenueData, getCourseRevenueDataByMonth } from "@/app/lib/data"
 import { useUserStore } from "@/app/stores/useUserStore"
 
-// const chartData: RevenueChartData[] = [
-//     { month: "January", venenue: 800000 },
-//     { month: "February", venenue: 2000000 },
-//     { month: "March", venenue: 1200000 },
-//     { month: "April", venenue: 1900000 },
-//     { month: "May", venenue: 0 },
-//     { month: "June", venenue: 1400000 },
-//     { month: "July", venenue: 1700000 },
-//     { month: "August", venenue: 1850000 },
-//     { month: "September", venenue: 0 },
-//     { month: "October", venenue: 1500000 },
-//     { month: "November", venenue: 1900000 },
-//     { month: "December", venenue: 0 },
-// ]
+// const courses = ["React Basics", "NodeJS Master", "UI Design", "Python Intro", "DevOps Essentials"];
+
+// const chartData2 = [
+//     { month: "January", "React Basics": 0, "NodeJS Master": 0, "UI Design": 0, "Python Intro": 0, "DevOps Essentials": 0 },
+//     { month: "February", "React Basics": 0, "NodeJS Master": 0, "UI Design": 0, "Python Intro": 0, "DevOps Essentials": 0 },
+//     { month: "March", "React Basics": 0, "NodeJS Master": 100000, "UI Design": 400000, "Python Intro": 60000, "DevOps Essentials": 40000 },
+//     { month: "April", "React Basics": 100000, "NodeJS Master": 12000, "UI Design": 50000, "Python Intro": 30000, "DevOps Essentials": 20000 },
+//     { month: "May", "React Basics": 100000, "NodeJS Master": 130000, "UI Design": 15000, "Python Intro": 35000, "DevOps Essentials": 200000 },
+//     { month: "June", "React Basics": 200000, "NodeJS Master": 100000, "UI Design": 30000, "Python Intro": 50000, "DevOps Essentials": 0 },
+// ];
+
+
+const colors = ["#60a5fa", "#f59e42", "#a78bfa", "#34d399", "#f472b6"];
 
 
 
@@ -51,23 +60,28 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export default function RevenueChart() {
-    const [chartData, setChartData] = useState<RevenueChartData[]>([])
+    const [chartData, setChartData] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const user = useUserStore((state) => state.user)
+    const [selectedFilter, setSelectedFilter] = useState("total_revenue");
 
     useEffect(() => {
-        if (!user) {
-            return
-        }
+        if (!user) return
+
         const fetchData = async () => {
             setIsLoading(true)
-            const data = await getRevenueData(user.id);
+            const data = selectedFilter === "total_revenue"
+                ? await getRevenueData(user.id)
+                : await getCourseRevenueDataByMonth(user.id);
             setChartData(data);
             setIsLoading(false)
         }
-        fetchData()
-    }, [user])
 
+        fetchData()
+    }, [user, selectedFilter])
+    const courseNames = chartData.length > 0
+        ? Object.keys(chartData[0]).filter((key) => key !== "month")
+        : [];
     let trendingText = "";
     let trendingIcon = null;
     if (chartData.length >= 2) {
@@ -96,8 +110,25 @@ export default function RevenueChart() {
         <div className="flex w-full flex-col md:col-span-4">
             <Card>
                 <CardHeader>
-                    <CardTitle>Revenue</CardTitle>
-                    <CardDescription>January - {new Date().toLocaleDateString("en-US", { month: "long" })} {new Date().getFullYear()}</CardDescription>
+                    <div className="flex justify-between items-start w-full">
+                        {/* Title + Description bên trái */}
+                        <div className="flex flex-col">
+                            <CardTitle>Revenue</CardTitle>
+                            <CardDescription>January - {new Date().toLocaleDateString("en-US", { month: "long" })} {new Date().getFullYear()}</CardDescription>
+                        </div>
+                        <Select onValueChange={setSelectedFilter} value={selectedFilter}>
+                            <SelectTrigger className="w-[180px] font-semibold   ">
+                                <SelectValue placeholder="Select a choose" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Filter</SelectLabel>
+                                    <SelectItem value="total_revenue">Total Revenue</SelectItem>
+                                    <SelectItem value="course_revenue">Course Revenue</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
@@ -106,39 +137,55 @@ export default function RevenueChart() {
                             <span className="ml-4 font-medium text-lg">Loading Data ...</span>
                         </div>
                     ) : (
-                        <ChartContainer config={chartConfig}>
-                            <BarChart accessibilityLayer data={chartData}>
-                                <CartesianGrid vertical={false} />
-                                <XAxis
-                                    dataKey="month"
-                                    tickLine={false}
-                                    tickMargin={10}
-                                    axisLine={false}
-                                    tickFormatter={(value) => value.slice(0, 3)}
-                                />
-                                <ChartTooltip
-                                    cursor={true}
-                                    content={<ChartTooltipContent indicator="dashed"
+                        selectedFilter === "total_revenue" ? (
+                            <ChartContainer config={chartConfig}>
 
-                                    />}
+                                <BarChart data={chartData}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} tickFormatter={(v) => v.slice(0, 3)} />
+                                    <ChartTooltip cursor content={<ChartTooltipContent indicator="dashed" />} />
+                                    <Bar dataKey="venenue" fill="var(--color-venenue)" radius={4} />
+                                </BarChart>
+                            </ChartContainer>
+                        ) : (
 
-                                />
-                                {/* <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} /> */}
-                                <Bar dataKey="venenue" fill="var(--color-venenue)" radius={4} />
-                            </BarChart>
-                        </ChartContainer>)
-                    }
+                            <ChartContainer config={{}}>
+
+                                <LineChart data={chartData} margin={{ left: 12, right: 12 }}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                        dataKey="month"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickMargin={8}
+                                        tickFormatter={(value) => value.slice(0, 3)}
+                                    />
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                                    {courseNames.map((course, idx) => (
+                                        <Line
+                                            key={course}
+                                            dataKey={course}
+                                            type="monotone"
+                                            stroke={colors[idx % colors.length]}
+                                            strokeWidth={2}
+                                            dot={false}
+                                        />
+                                    ))}
+                                </LineChart>
+                            </ChartContainer>
+                        )
+
+                    )}
                 </CardContent>
                 <CardFooter className="flex-col items-start gap-2 text-sm">
-                    <div className="flex gap-2 font-medium leading-none">
+                    {selectedFilter === "total_revenue" && (<div className="flex gap-2 font-medium leading-none">
                         {trendingText} {trendingIcon}
-                    </div>
+                    </div>)}
                     {/* <div className="leading-none text-muted-foreground">
                         Showing total visitors for the last 6 months
                     </div> */}
                 </CardFooter>
-            </Card>
-        </div>
-
+            </Card >
+        </div >
     )
 }
