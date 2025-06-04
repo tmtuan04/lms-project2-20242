@@ -33,19 +33,19 @@ import {
 } from "@/components/ui/chart"
 
 // import { RevenueChartData } from "@/app/lib/definitions"
-import { getRevenueData, getCourseRevenueDataByMonth } from "@/app/lib/data"
+import { getRevenueData } from "@/app/lib/data"
 import { useUserStore } from "@/app/stores/useUserStore"
 
-// const courses = ["React Basics", "NodeJS Master", "UI Design", "Python Intro", "DevOps Essentials"];
+const courses = ["React Basics", "NodeJS Master", "UI Design", "Python Intro", "DevOps Essentials"];
 
-// const chartData2 = [
-//     { month: "January", "React Basics": 0, "NodeJS Master": 0, "UI Design": 0, "Python Intro": 0, "DevOps Essentials": 0 },
-//     { month: "February", "React Basics": 0, "NodeJS Master": 0, "UI Design": 0, "Python Intro": 0, "DevOps Essentials": 0 },
-//     { month: "March", "React Basics": 0, "NodeJS Master": 100000, "UI Design": 400000, "Python Intro": 60000, "DevOps Essentials": 40000 },
-//     { month: "April", "React Basics": 100000, "NodeJS Master": 12000, "UI Design": 50000, "Python Intro": 30000, "DevOps Essentials": 20000 },
-//     { month: "May", "React Basics": 100000, "NodeJS Master": 130000, "UI Design": 15000, "Python Intro": 35000, "DevOps Essentials": 200000 },
-//     { month: "June", "React Basics": 200000, "NodeJS Master": 100000, "UI Design": 30000, "Python Intro": 50000, "DevOps Essentials": 0 },
-// ];
+const chartData2 = [
+    { month: "January", "React Basics": 0, "NodeJS Master": 0, "UI Design": 0, "Python Intro": 0, "DevOps Essentials": 0 },
+    { month: "February", "React Basics": 0, "NodeJS Master": 0, "UI Design": 0, "Python Intro": 0, "DevOps Essentials": 0 },
+    { month: "March", "React Basics": 0, "NodeJS Master": 100000, "UI Design": 400000, "Python Intro": 60000, "DevOps Essentials": 40000 },
+    { month: "April", "React Basics": 100000, "NodeJS Master": 12000, "UI Design": 50000, "Python Intro": 30000, "DevOps Essentials": 20000 },
+    { month: "May", "React Basics": 100000, "NodeJS Master": 130000, "UI Design": 15000, "Python Intro": 35000, "DevOps Essentials": 200000 },
+    { month: "June", "React Basics": 200000, "NodeJS Master": 100000, "UI Design": 30000, "Python Intro": 50000, "DevOps Essentials": 0 },
+];
 
 
 const colors = ["#60a5fa", "#f59e42", "#a78bfa", "#34d399", "#f472b6"];
@@ -72,16 +72,14 @@ export default function RevenueChart() {
             setIsLoading(true)
             const data = selectedFilter === "total_revenue"
                 ? await getRevenueData(user.id)
-                : await getCourseRevenueDataByMonth(user.id);
+                : chartData2;
             setChartData(data);
             setIsLoading(false)
         }
 
         fetchData()
     }, [user, selectedFilter])
-    const courseNames = chartData.length > 0
-        ? Object.keys(chartData[0]).filter((key) => key !== "month")
-        : [];
+
     let trendingText = "";
     let trendingIcon = null;
     if (chartData.length >= 2) {
@@ -148,9 +146,7 @@ export default function RevenueChart() {
                                 </BarChart>
                             </ChartContainer>
                         ) : (
-
                             <ChartContainer config={{}}>
-
                                 <LineChart data={chartData} margin={{ left: 12, right: 12 }}>
                                     <CartesianGrid vertical={false} />
                                     <XAxis
@@ -161,7 +157,7 @@ export default function RevenueChart() {
                                         tickFormatter={(value) => value.slice(0, 3)}
                                     />
                                     <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                                    {courseNames.map((course, idx) => (
+                                    {courses.map((course, idx) => (
                                         <Line
                                             key={course}
                                             dataKey={course}
