@@ -44,11 +44,11 @@ export default function CardAnalys() {
             <Card title="Total Courses" value={isLoading
                 ? <RefreshCcw className="animate-spin" />
                 : numberofCourses} type="courses" />
-            <Card title="Total Invoices" value={isLoading
+            <Card title="Total Course Enrollments" value={isLoading
                 ? <RefreshCcw className="animate-spin" />
                 : numberOfInvoices} type="invoices" />
             <Card
-                title="Total Customers"
+                title="Total Learners"
                 value={isLoading
                     ? <RefreshCcw className="animate-spin" />
                     : numberOfCustomers}
