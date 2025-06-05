@@ -10,6 +10,7 @@ import {
     getTopEnrolledCustomers,
     getTopSpenders,
     getUserCoursesWithProgress,
+    getTopCompletedStudents,
 } from '@/app/lib/data';
 import {
     Select,
@@ -47,6 +48,9 @@ export default function RecentCustomers() {
                 break;
             case 'highest_spent':
                 data = await getTopSpenders(user.id);
+                break;
+            case 'most_completed':
+                data = await getTopCompletedStudents(user.id);
                 break;
             case 'last_invoice':
             default:
@@ -89,7 +93,11 @@ export default function RecentCustomers() {
                     📚 {item.amount} enrolled
                 </Badge>
             case 'most_completed':
-                return `${item.amount} courses`;
+                return <Badge variant="default"
+                    className="bg-blue-500 text-white dark:bg-blue-600 text-sm" >
+                    {/* <CircleCheckBig /> */}
+                    📚 {item.amount} course
+                </Badge>
             default:
                 return item.amount;
         }
@@ -109,7 +117,7 @@ export default function RecentCustomers() {
                                 <SelectLabel>Filter</SelectLabel>
                                 <SelectItem value="last_invoice">Last Invoice</SelectItem>
                                 <SelectItem value="most_enrolled">Top Registrations</SelectItem>
-                                {/* <SelectItem value="c">Top Completed Courses</SelectItem> */}
+                                <SelectItem value="most_completed">Top Completed</SelectItem>
                                 <SelectItem value="highest_spent">Top Spenders</SelectItem>
 
                             </SelectGroup>
@@ -192,13 +200,27 @@ export default function RecentCustomers() {
 
 
                             <div className="flex gap-2">
-                                <span className="inline-flex items-center bg-purple-100 text-purple-600 rounded-full px-3 py-1 text-xs font-semibold">🏅 Active Learner</span>
-                                <span className="inline-flex items-center bg-orange-100 text-orange-600 rounded-full px-3 py-1 text-xs font-semibold">🎯 Completed {completedCourses} courses</span>
                                 {(() => {
                                     if (courses.length === 0) return null;
-                                    const firstJoin = courses
-                                        .map(course => new Date(course.coursejoin))
-                                        .sort((a, b) => a.getTime() - b.getTime())[0];
+                                    // Khóa học mua mới nhất là phần tử đầu tiên
+                                    const latestJoin = new Date(courses[0].coursejoin);
+                                    const now = new Date();
+                                    const diffDays = Math.floor((now.getTime() - latestJoin.getTime()) / (1000 * 60 * 60 * 24));
+                                    if (diffDays <= 15) {
+                                        return (
+                                            <span className="inline-flex items-center bg-purple-100 text-purple-600 rounded-full px-3 py-1 text-xs font-semibold">
+                                                🏅 Active Learner
+                                            </span>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+
+                                <span className="inline-flex items-center bg-orange-100 text-orange-600 rounded-full px-3 py-1 text-xs font-semibold">🎯 Completed {completedCourses} courses</span>
+
+                                {(() => {
+                                    if (courses.length === 0) return null;
+                                    const firstJoin = new Date(courses[courses.length - 1].coursejoin);
                                     const now = new Date();
                                     const diffDays = Math.floor((now.getTime() - firstJoin.getTime()) / (1000 * 60 * 60 * 24));
                                     if (diffDays <= 15) {

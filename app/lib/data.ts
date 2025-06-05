@@ -479,6 +479,7 @@ export async function getUserCoursesWithProgress(
       WHERE ce."userId" = ${userId}
         AND c."instructorId" = ${instructorId}
       GROUP BY c.id, c.title, c."imageUrl", ce."createdAt"
+      ORDER BY ce."createdAt" DESC;
     `;
     return data.map(row => ({
       id: row.id,
@@ -568,6 +569,53 @@ export async function getTopSpenders(instructorId: string): Promise<Customer[]> 
     throw new Error("Failed to fetch top spenders");
   }
 }
+export async function getTopCompletedStudents(
+  instructorId: string
+): Promise<Customer[]> {
+  try {
+    const data = await sql<{
+      id: string;
+      name: string;
+      email: string;
+      image_url: string;
+      joined_at: Date;
+      amount: number;
+    }[]>`
+      SELECT 
+        u.id,
+        u.name,
+        u.email,
+        u."imageUrl" AS image_url,
+        u."createdAt" AS joined_at,
+        COUNT(DISTINCT c.id) AS amount
+      FROM "CourseEnrollment" ce
+      JOIN "Course" c ON ce."courseId" = c.id
+      JOIN "User" u ON ce."userId" = u.id
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      LEFT JOIN "ChapterProgress" cp 
+        ON cp."chapterId" = ch.id AND cp."userId" = ce."userId"
+      WHERE c."instructorId" = ${instructorId}
+      GROUP BY u.id, u.name, u.email, u."imageUrl"
+      HAVING COUNT(DISTINCT CASE WHEN cp."isCompleted" = true THEN ch.id END) >=
+             COUNT(DISTINCT ch.id)
+      ORDER BY amount DESC
+      LIMIT 5;
+    `;
+
+    return data.map((row) => ({
+      id: row.id,
+      name: row.name || "Anonymous",
+      email: row.email || "",
+      joined_at: row.joined_at || new Date(),
+      image_url: row.image_url || "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg",
+      amount: Number(row.amount || 0),
+    }));
+  } catch (error) {
+    console.error("Error in getTopCompletedStudents:", error);
+    throw new Error("Failed to fetch top completed students");
+  }
+}
+
 
 
 
