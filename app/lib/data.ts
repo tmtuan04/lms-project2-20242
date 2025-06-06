@@ -384,7 +384,6 @@ export async function getInitUserCourseCards(
     console.log("Error from fetch Course Dashboard:", error);
     throw new Error("Failes to fetch user course cards");
   }
-  // return [
   //   {
   //     id: "course-001",
   //     instructor: "Nguyễn Văn A",
