@@ -4,6 +4,7 @@ import { useUserStore } from '@/app/stores/useUserStore';
 import { CircleDollarSign, UsersRound, Inbox, FileText } from 'lucide-react';
 import { fetchCardAnalys } from '@/app/lib/data';
 import { RefreshCcw } from 'lucide-react';
+import clsx from 'clsx';
 
 const iconMap = {
     sales: CircleDollarSign,
@@ -76,7 +77,13 @@ export function Card({
                 <h3 className="ml-2 text-sm font-medium">{title}</h3>
             </div>
             <p
-                className='truncate rounded-xl bg-white px-4 py-6 text-2xl font-semibold'
+                className={clsx(
+                    type === 'sales' ? 'bg-gradient-to-r from-blue-100 border-2 border-blue-300' :
+                        type === 'customers' ? 'bg-gradient-to-r from-green-100 to-green-50 border-2 border-green-300' :
+                            type === 'courses' ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 border-2 border-yellow-300' :
+                                type === 'invoices' ? 'bg-gradient-to-r from-purple-100 to-purple-50 border-2 border-purple-300' : 'bg-white',
+                    'truncate rounded-xl bg-white px-4 py-6 text-2xl font-semibold',
+                )}
             >
                 {type === 'sales' ?
                     new Intl.NumberFormat("vi-VN", {
