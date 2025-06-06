@@ -2,7 +2,6 @@ import { fetchCourseById } from "@/app/lib/data";
 import { redirect } from "next/navigation";
 import { type NextPage } from "next";
 import ChapterContent from "../../components/ChapterContent";
-// import { Lock, CircleAlert } from "lucide-react";
 
 interface ChapterPageProps {
   params: Promise<{ courseId: string; chaptersId: string }>;

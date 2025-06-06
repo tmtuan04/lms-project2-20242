@@ -1,4 +1,5 @@
 "use client";
+
 import { getInitUserCourseCards } from "@/app/lib/data";
 import UserCourseCard from "../_components/UserCourseCard";
 import { Clock, CircleCheckBig } from "lucide-react";

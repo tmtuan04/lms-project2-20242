@@ -94,12 +94,12 @@ export default function ChapterContent({ chapter, courseId }: ChapterContentProp
         <h2 className="text-xl font-bold">{chapter.title}</h2>
         {isEnrolled && (
           <Button
-            variant={isCompleted ? "default" : "outline"}
+            variant={ isCompleted ? "outline" : "secondary"}
             onClick={handleToggleComplete}
             disabled={isLoading}
             className="flex items-center gap-2"
           >
-            <CheckCircle2 className={isCompleted ? "text-white" : "text-green-600"} />
+            <CheckCircle2 className="text-green-600" />
             {isCompleted ? "Completed" : "Mark as Complete"}
           </Button>
         )}

@@ -8,6 +8,7 @@ datasource db {
 }
 
 // Tạo migration mới: npx prisma migrate dev --name your_migration_name
+// Mục đích của @@index([field]): tạo index giúp tăng tốc độ truy vấn và giảm độ trễ khi có nhiều bản ghi
 
 // User Model
 model User {
@@ -23,7 +24,7 @@ model User {
   courses     Course[]           @relation("InstructorCourses")
   enrollments CourseEnrollment[]
   chapterProgress ChapterProgress[]
-
+  courseReviews   CourseReview[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   Payment   Payment[]
@@ -56,6 +57,7 @@ model Course {
 
   chapters    Chapter[]
   enrollments CourseEnrollment[]
+  courseReviews   CourseReview[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -143,21 +145,6 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// // Attachment Model
-// model Attachment {
-//   id String @id @default(uuid())
-//   name String
-//   url String @db.Text
-
-//   courseId String
-//   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   @@index([courseId])
-// }
-
 model ChapterProgress {
   id          String   @id @default(uuid())
   userId      String
@@ -173,3 +160,22 @@ model ChapterProgress {
   @@index([chapterId])
 }
 
+model CourseReview {
+  id String @id @default(uuid())
+
+  userId String
+  courseId String
+
+  rating Int // 1 đến 5 sao
+  comment String? @db.Text
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // @@unique([userId, courseId]) // Mỗi user chỉ review 1 lần cho 1 khóa
+  @@index([courseId])
+  @@index([userId])
+}

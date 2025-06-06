@@ -31,6 +31,7 @@ export default async function CourseLayout({
       {/* Main content */}
       <div className="md:pl-80 h-full">
         <CourseHeader
+          imageUrl={course.imageUrl}
           title={course.title}
           instructor={course.instructor}
           price={course.price}

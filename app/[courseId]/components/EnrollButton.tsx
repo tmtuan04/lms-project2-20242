@@ -4,11 +4,42 @@ import { CreditCard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import { useUserStore } from '@/app/stores/useUserStore';
+import toast from 'react-hot-toast';
 
 export function EnrollButton({ price, courseId }: { price: number, courseId: string }) {
     const user = useUserStore((s) => s.user);
 
     const handleEnroll = async () => {
+        if (!user) {
+            toast.error("Bạn cần đăng nhập trước khi đăng ký khoá học!");
+            return;
+        }
+        // Nếu miễn phí, gọi API để ghi danh luôn mà không qua thanh toán
+        if (price === 0) {
+            const res = await fetch("/api/enrollments", {
+                method: "POST",
+                body: JSON.stringify({
+                    userId: user.id,
+                    courseId,
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                toast.success("Đăng ký khóa học thành công!");
+                // Redirect
+                // window.location.href = `/${courseId}`;
+            } else {
+                toast.error("Đăng ký thất bại: " + data.message);
+            }
+
+            return;
+        }
+
         const res = await fetch("/api/order", {
             method: "POST",
             body: JSON.stringify({
@@ -28,7 +59,7 @@ export function EnrollButton({ price, courseId }: { price: number, courseId: str
         if (data.success) {
             window.location.href = data.paymentUrl;
         } else {
-            alert("Thanh toán thất bại: " + data.message);
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!")
         }
     };
 

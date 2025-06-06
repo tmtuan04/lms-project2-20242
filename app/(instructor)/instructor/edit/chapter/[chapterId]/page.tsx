@@ -9,13 +9,19 @@ import { Save, Video, Pencil, Eye, Trash2, ArrowLeft, FileText, Image as ImageIc
 import { useDropzone } from "react-dropzone";
 import { useEditChapterStore } from "@/app/stores/editChapterStore";
 import toast from "react-hot-toast";
-// import { useRouter } from "next/navigation";
+import { deleteDocument, deleteDocumentFromDB } from "@/app/lib/actions/deleteDocument";
+import { Document } from "@/app/lib/definitions";
+import DeleteConfirmDialog from "./_components/Alert";
 
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getChapterByID } from "@/app/lib/data";
 
 import { updateChapter } from "@/app/lib/actions/chaptersActions";
+
+
+// Check lại phần xoá video
+
 
 export default function ChapterDetailPage() {
     // const router = useRouter();
@@ -56,13 +62,14 @@ export default function ChapterDetailPage() {
         setDocumentName,
         setDocumentsConfirmed,
         addDocument,
-        removeDocument,
         setAccessMode,
         setAccessConfirmed,
     } = useEditChapterStore();
 
     // State for loading
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeletingDocument, setIsDeletingDocument] = useState(false);
+    const [isDeletingVideo, setIsDeletingVideo] = useState(false);
 
     useEffect(() => {
         const fetchChapter = async () => {
@@ -90,6 +97,7 @@ export default function ChapterDetailPage() {
                 // Documents
                 if (data.attachments && data.attachments.length > 0) {
                     const formattedDocs = data.attachments.map((doc) => ({
+                        id: doc.id, // Store the database ID
                         name: doc.name,
                         url: doc.url,
                         type: doc.url.endsWith(".pdf") ? "application/pdf"
@@ -111,6 +119,7 @@ export default function ChapterDetailPage() {
 
             } catch (error) {
                 console.error("Failed to load chapter", error);
+                toast.error("Failed to load chapter data.");
             }
         };
 
@@ -123,7 +132,7 @@ export default function ChapterDetailPage() {
         setVideoUrl,
         setVideoPreview,
         setVideoConfirmed,
-        addDocument,
+        addDocument, // Note: addDocument might not be needed here if we replace it with setDocuments
         setDocuments,
         setDocumentsConfirmed,
         setAccessConfirmed,
@@ -166,6 +175,8 @@ export default function ChapterDetailPage() {
                 if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
                     const fileUrl = URL.createObjectURL(file);
                     addDocument({
+                        // No database ID for new files until saved
+                        id: undefined, // Or null, depending on how your store handles optional IDs
                         name: file.name,
                         type: file.type,
                         url: fileUrl
@@ -192,12 +203,106 @@ export default function ChapterDetailPage() {
             else if (/\.(jpg|jpeg|png|gif)$/i.test(documentLink)) type = 'image';
             const fileName = documentName.trim() || documentLink.split('/').pop() || 'Document';
             addDocument({
+                // No database ID for new links
+                id: undefined, // Or null
                 name: fileName,
                 type,
                 url: documentLink
             });
             setDocumentLink('');
             setDocumentName('');
+        }
+    };
+
+    // Function to extract Cloudinary Public ID from URL
+    const getCloudinaryPublicIdFromUrl = (url: string): string | null => {
+        try {
+            const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)(\.\w+)?$/);
+            if (match && match[1]) {
+                return match[1]; // public_id (ví dụ: folder_name/file_name)
+            }
+        } catch (error) {
+            console.error("Error extracting Cloudinary public_id:", error);
+        }
+        return null;
+    };
+
+    // Handle Document Deletion
+    const handleDeleteDocument = async (documentToDelete: Document) => {
+        setIsDeletingDocument(true);
+        try {
+            // Delete from Cloudinary if it's an uploaded file (has blob: prefix or matches Cloudinary URL pattern)
+            if (documentToDelete.url.startsWith('blob:') || documentToDelete.url.includes('res.cloudinary.com')) {
+                const publicId = getCloudinaryPublicIdFromUrl(documentToDelete.url);
+                console.log("PublicId:", publicId);
+                if (publicId) {
+                    await deleteDocument(publicId); // Server action to delete from Cloudinary
+                } else if (!documentToDelete.url.startsWith('blob:')) {
+                    // Log a warning if it looks like a Cloudinary URL but we couldn't get the ID
+                    console.warn("Could not extract Cloudinary public ID from URL:", documentToDelete.url);
+                    // Decide if you want to stop deletion or proceed with DB deletion only
+                }
+            }
+
+            // Delete from Database if it has a database ID
+            if (documentToDelete.id) {
+                await deleteDocumentFromDB(documentToDelete.id); // Server action to delete from DB
+            } else if (!documentToDelete.url.startsWith('blob:')) {
+                // Log a warning if it was a linked document without an ID initially,
+                // it won't be in the DB unless saved previously.
+                console.warn("Document does not have a database ID and is not a local file:", documentToDelete);
+            }
+
+            // Remove from local state
+            setDocuments(documents.filter(doc => doc !== documentToDelete));
+            toast.success("Document deleted successfully!");
+
+            // If all documents are removed, mark documents as not confirmed
+            if (documents.length === 1 && documents[0] === documentToDelete) {
+                setDocumentsConfirmed(false);
+            }
+
+        } catch (error) {
+            console.error("Error deleting document:", error);
+            toast.error("Failed to delete document.");
+        } finally {
+            setIsDeletingDocument(false);
+        }
+    };
+
+    // Handle Video Deletion
+    const handleDeleteVideo = async () => {
+        setIsDeletingVideo(true);
+        try {
+            // Delete from Cloudinary if it's an uploaded video
+            if (videoUrl && videoUrl.includes('res.cloudinary.com')) {
+                const publicId = getCloudinaryPublicIdFromUrl(videoUrl);
+                if (publicId) {
+                    await deleteDocument(publicId); // Assuming videos are also handled by deleteDocument server action
+                } else {
+                    console.warn("Could not extract Cloudinary public ID from video URL:", videoUrl);
+                    // Decide if you want to stop deletion or proceed with clearing URL only
+                }
+            }
+
+            // Clear video info in the database by saving with an empty URL
+            // The handleSave function will handle updating the chapter with an empty videoUrl
+            // We just need to clear the local state here and let handleSave do the DB update.
+            setVideoFile(null);
+            setVideoUrl('');
+            setVideoPreview('');
+            setIsEditingVideo(true); // Go back to edit mode
+            setVideoConfirmed(false); // Mark as not confirmed
+
+            // Need to call save here to update the DB, or rely on the user clicking save.
+            // It might be better UX to just clear locally and require the user to click Save.
+            toast.success("Video cleared locally. Click Save to update the chapter.");
+
+        } catch (error) {
+            console.error("Error deleting video:", error);
+            toast.error("Failed to delete video.");
+        } finally {
+            setIsDeletingVideo(false);
         }
     };
 
@@ -242,6 +347,7 @@ export default function ChapterDetailPage() {
     const uploadFileToCloudinary = async (file: File): Promise<string | null> => {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("filename", file.name);
 
         try {
             const res = await fetch("/api/upload", {
@@ -250,12 +356,15 @@ export default function ChapterDetailPage() {
             });
 
             if (!res.ok) {
-                throw new Error("Upload failed");
+                const error = await res.json();
+                throw new Error(error.message || "Upload failed");
             }
 
             const data = await res.json();
             return data.secure_url || null;
-        } catch (err) {
+        } catch (error) {
+            const err = error as Error
+            toast.error(`Upload error: ${err.message}`);
             console.error("Upload error", err);
             return null;
         }
@@ -280,21 +389,22 @@ export default function ChapterDetailPage() {
                     finalVideoUrl = videoUploadUrl;
                 }
 
-                // Upload documents that are files
-                const uploadedDocuments = await Promise.all(
+                // Upload documents that are files and format them with names and URLs
+                const formattedDocumentsForUpload = await Promise.all(
                     documents.map(async (doc) => {
                         if (doc.url.startsWith('blob:')) {
                             // This is a local file that needs to be uploaded
                             const response = await fetch(doc.url);
                             const blob = await response.blob();
-                            const file = new File([blob], doc.name, { type: doc.type });
+                            const file = new File([blob], doc.name, { type: doc.type }); // Use original name and type
                             const uploadUrl = await uploadFileToCloudinary(file);
                             if (!uploadUrl) {
                                 throw new Error(`Failed to upload document: ${doc.name}`);
                             }
-                            return uploadUrl;
+                            return { name: doc.name, url: uploadUrl }; // Return object with name and URL
                         }
-                        return doc.url;
+                        // For existing documents or added links, return existing id, name and url
+                        return { id: doc.id, name: doc.name, url: doc.url };
                     })
                 );
 
@@ -304,14 +414,13 @@ export default function ChapterDetailPage() {
                     throw new Error("Failed to get chapter data");
                 }
 
-
-                // Update chapter with all required fields
+                // Update chapter with all required fields, including formatted attachments
                 const result = await updateChapter({
                     chapterId,
                     title,
                     description,
-                    videoUrl: finalVideoUrl || "",
-                    attachments: uploadedDocuments,
+                    videoUrl: finalVideoUrl || "", // Pass the final video URL (could be empty string to remove)
+                    attachments: formattedDocumentsForUpload.map(doc => doc.url),
                     isLocked: accessMode === 'locked',
                     courseId: chapterData.courseId
                 });
@@ -319,6 +428,12 @@ export default function ChapterDetailPage() {
                 if (!result) {
                     throw new Error("Failed to update chapter");
                 }
+
+                // Optionally refetch data to get new IDs for newly uploaded documents
+                // const updatedChapterData = await getChapterByID(chapterId);
+                // if(updatedChapterData) {
+                //     setDocuments(updatedChapterData.attachments.map(doc => ({...doc, type: doc.url.endsWith(".pdf") ? "application/pdf" : /\.(jpg|jpeg|png|gif)$/i.test(doc.url) ? "image" : "link"})));
+                // }
 
                 // router.push("/instructor/edit/1); // Redirect back to course
             } catch (error) {
@@ -336,31 +451,6 @@ export default function ChapterDetailPage() {
         });
     };
 
-
-    // const handleDelete = async () => {
-    //     if (!confirm("Are you sure you want to delete this chapter? This action cannot be undone.")) {
-    //         return;
-    //     }
-
-    //     const deletePromise = (async () => {
-    //         const response = await fetch(`/api/chapters/${chapterId}`, {
-    //             method: 'DELETE',
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error("Failed to delete chapter");
-    //         }
-
-    //         router.push("/instructor/edit/1");
-    //     })();
-
-    //     toast.promise(deletePromise, {
-    //         loading: 'Deleting chapter...',
-    //         success: 'Chapter deleted successfully!',
-    //         error: 'Failed to delete chapter'
-    //     });
-    // };
-    
     return (
         <div className="p-5 space-y-3">
             <Link href={`/instructor/edit/${courseId}`}>
@@ -377,13 +467,6 @@ export default function ChapterDetailPage() {
                         disabled={isSaving || !isAllConfirmed}
                     >
                         {isSaving ? "Saving..." : <><Save />Save</>}
-                    </Button>
-                    <Button
-                        variant="destructive"
-                        // onClick={handleDelete}
-                        disabled={isSaving}
-                    >
-                        <Trash2 size={16} />
                     </Button>
                 </div>
             </div>
@@ -406,7 +489,7 @@ export default function ChapterDetailPage() {
                                         size="sm"
                                         onClick={() => handleEdit('title')}
                                     >
-                                        <Edit /> Edit
+                                        <Edit size={16} className="mr-1" /> Edit
                                     </Button>
                                 ) : (
                                     <Button
@@ -415,7 +498,7 @@ export default function ChapterDetailPage() {
                                         onClick={() => setTitleConfirmed(true)}
                                         disabled={!canConfirmTitle}
                                     >
-                                        <CheckCircle /> Confirm
+                                        <CheckCircle size={16} className="mr-1" /> Confirm
                                     </Button>
                                 )}
                             </div>
@@ -424,6 +507,7 @@ export default function ChapterDetailPage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             className={titleConfirmed ? "font-medium" : ""}
+                            disabled={titleConfirmed}
                         />
                     </section>
 
@@ -438,7 +522,7 @@ export default function ChapterDetailPage() {
                                         size="sm"
                                         onClick={() => handleEdit('description')}
                                     >
-                                        <Edit /> Edit
+                                        <Edit size={16} className="mr-1" /> Edit
                                     </Button>
                                 ) : (
                                     <Button
@@ -447,7 +531,7 @@ export default function ChapterDetailPage() {
                                         onClick={() => setDescriptionConfirmed(true)}
                                         disabled={!canConfirmDescription}
                                     >
-                                        <CheckCircle /> Confirm
+                                        <CheckCircle size={16} className="mr-1" /> Confirm
                                     </Button>
                                 )}
                             </div>
@@ -457,6 +541,7 @@ export default function ChapterDetailPage() {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             className={descriptionConfirmed ? "font-medium" : ""}
+                            disabled={descriptionConfirmed}
                         />
                     </section>
 
@@ -473,7 +558,7 @@ export default function ChapterDetailPage() {
                                         size="sm"
                                         onClick={() => handleEdit('documents')}
                                     >
-                                        <Edit /> Edit
+                                        <Edit size={16} className="mr-1" /> Edit
                                     </Button>
                                 ) : (
                                     <Button
@@ -482,7 +567,7 @@ export default function ChapterDetailPage() {
                                         onClick={() => setDocumentsConfirmed(true)}
                                         disabled={!canConfirmDocuments}
                                     >
-                                        <CheckCircle /> Confirm
+                                        <CheckCircle size={16} className="mr-1" /> Confirm
                                     </Button>
                                 )}
                             </div>
@@ -530,7 +615,7 @@ export default function ChapterDetailPage() {
                                             onChange={(e) => setDocumentLink(e.target.value)}
                                             className="flex-1"
                                         />
-                                        <Button onClick={handleAddDocument}>
+                                        <Button onClick={handleAddDocument} disabled={!documentLink}>
                                             <LinkIcon size={16} className="mr-2" />
                                             Add Link
                                         </Button>
@@ -551,13 +636,21 @@ export default function ChapterDetailPage() {
                                                 )}
                                                 <span className="text-sm truncate max-w-[200px]">{doc.name}</span>
                                             </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => removeDocument(index)}
-                                            >
-                                                <Trash2 size={16} />
-                                            </Button>
+                                            {/* Delete Button for documents */}
+                                            <DeleteConfirmDialog
+                                                trigger={
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        disabled={isDeletingDocument}
+                                                    >
+                                                        {isDeletingDocument ? "Deleting..." : <Trash2 size={16} />}
+                                                    </Button>
+                                                }
+                                                title="Confirm Document Deletion"
+                                                description={`Are you sure you want to delete "${doc.name}"? This action cannot be undone.`}
+                                                onConfirm={() => handleDeleteDocument(doc)}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -601,7 +694,7 @@ export default function ChapterDetailPage() {
                                         size="sm"
                                         onClick={() => handleEdit('video')}
                                     >
-                                        <Edit /> Edit
+                                        <Edit size={16} className="mr-1" /> Edit
                                     </Button>
                                 ) : (
                                     <Button
@@ -610,7 +703,7 @@ export default function ChapterDetailPage() {
                                         onClick={() => setVideoConfirmed(true)}
                                         disabled={!canConfirmVideo}
                                     >
-                                        <CheckCircle /> Confirm
+                                        <CheckCircle size={16} className="mr-1" /> Confirm
                                     </Button>
                                 )}
                             </div>
@@ -648,7 +741,7 @@ export default function ChapterDetailPage() {
                                             onChange={(e) => setVideoUrl(e.target.value)}
                                             className="flex-1"
                                         />
-                                        <Button onClick={handleVideoLink}>
+                                        <Button onClick={handleVideoLink} disabled={!videoUrl}>
                                             <LinkIcon size={16} className="mr-2" />
                                             Add Link
                                         </Button>
@@ -665,7 +758,7 @@ export default function ChapterDetailPage() {
                                         <iframe
                                             src={convertYoutubeUrlToEmbed(videoPreview)}
                                             title="YouTube video"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-write; gyroscope; picture-in-picture"
                                             allowFullScreen
                                             className="w-full h-full border-none"
                                         ></iframe>
@@ -679,6 +772,21 @@ export default function ChapterDetailPage() {
                                     <p className="text-sm text-gray-600">
                                         {videoFile ? `File: ${videoFile.name}` : 'Video URL added'}
                                     </p>
+                                    {/* Delete Button for video */}
+                                    <DeleteConfirmDialog
+                                        trigger={
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                disabled={isDeletingVideo}
+                                            >
+                                                {isDeletingVideo ? "Deleting..." : <><Trash2 size={16} className="mr-1" /> Delete Video</>}
+                                            </Button>
+                                        }
+                                        title="Confirm Video Deletion"
+                                        description="Are you sure you want to delete this video? This action cannot be undone locally, but you must click 'Save' to confirm the deletion in the database."
+                                        onConfirm={handleDeleteVideo}
+                                    />
                                 </div>
                             </div>
                         )}
@@ -694,7 +802,7 @@ export default function ChapterDetailPage() {
                                 </Button>
                             ) : (
                                 <Button variant="outline" size="sm" onClick={() => setAccessConfirmed(true)}>
-                                    <CheckCircle className="mr-1" /> Confirm
+                                    <CheckCircle size={16} className="mr-1" /> Confirm
                                 </Button>
                             )}
                         </h2>

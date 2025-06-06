@@ -5,7 +5,7 @@ import { createOrder } from "@/services/order-service";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
+    const { courseId } = body;
     const { orderId, amount } = await createOrder(body);
 
     const forwardedFor = req.headers.get("x-forwarded-for");
@@ -15,9 +15,9 @@ export async function POST(req: Request) {
       vnp_Amount: amount,
       vnp_IpAddr: ip,
       vnp_TxnRef: orderId,
-      vnp_OrderInfo: `Thanh toan don hang ${orderId}`,
+      vnp_OrderInfo: `Thanh toan don hang course-${courseId}-order-${orderId}`,
       vnp_OrderType: ProductCode.Other,
-      vnp_ReturnUrl: "https://lms-project2-20242.vercel.app/vnpay-return", // Thay lại bằng link khác, test thì cứ để như này
+      vnp_ReturnUrl: "https://lms-project2-20242.vercel.app/vnpay-return",
       vnp_Locale: VnpLocale.VN,
     });
 

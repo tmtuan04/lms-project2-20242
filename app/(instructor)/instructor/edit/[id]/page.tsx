@@ -65,6 +65,7 @@ export default function EditCoursePage() {
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isPublished, setIsPublished] = useState(false);
 
     useEffect(() => {
         const loadCategories = async () => {
@@ -88,6 +89,7 @@ export default function EditCoursePage() {
                 console.log(courseData);
                 // Reset chapters before adding new ones
                 resetStore();
+                setIsPublished(courseData.isPublished);
 
                 // Update store with fetched data
                 setTitle(courseData.title);
@@ -298,10 +300,13 @@ export default function EditCoursePage() {
     }
 
     return (
+        // Div này để responsive
         <div>
-            <div className="bg-yellow-100 p-4 text-sm text-yellow-700">
-                This course is <span className="font-bold">unpublished</span>. It will not be visible to students.
-            </div>
+            {!isPublished && (
+                <div className="bg-yellow-100 p-4 text-sm text-yellow-700">
+                    This course is <span className="font-bold">unpublished</span>. It will not be visible to students.
+                </div>
+            )}
 
             <div className="p-4 space-y-6">
                 <div className="flex items-center justify-between">
