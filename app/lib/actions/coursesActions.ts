@@ -34,6 +34,7 @@ export async function createCourse({
     throw new Error("Missing required fields");
   }
 
+  // Fill thêm trường courseUrl (/course/)
   const course = await prisma.course.create({
     data: {
       title,

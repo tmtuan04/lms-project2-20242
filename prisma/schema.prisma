@@ -117,7 +117,7 @@ model CourseEnrollment {
   @@index([courseId])
 }
 
-// Payment Model
+// Payment Model: đang bị lỗi, nếu xoá khoá học cũng xoá luôn những thông tin giao dịch
 model Payment {
   id            String        @id @default(uuid())
   userId        String
