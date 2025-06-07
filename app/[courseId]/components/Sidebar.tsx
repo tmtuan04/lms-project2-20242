@@ -29,29 +29,41 @@ export default function Sidebar({ courseId, chapters }: SidebarProps) {
 
         return (
           <div key={chapter.id}>
-            <button
-              onClick={() => toggleOpen(chapter.id)}
+            <div
               className={clsx(
-                "w-full flex items-center justify-between gap-x-2 text-sm font-[500] pl-6 pr-4 py-4 transition-all cursor-pointer",
+                "w-full flex items-center justify-between gap-x-2 text-sm font-[500] pl-6 pr-4 py-4 transition-all",
                 {
                   "text-[#255C6E] bg-[#F2FBFF]": isActive,
                   "text-gray-700 hover:bg-gray-100": !isActive,
                 }
               )}
             >
-              <div className="flex items-center gap-x-2">
+              {/* Main clickable chapter area that navigates */}
+              <Link
+                href={chapterPath}
+                className="flex items-center gap-x-2 flex-1"
+              >
                 {isFirstChapter ? (
                   <Compass className={clsx("h-4 w-4", isActive ? "text-[#255C6E]" : "")} />
                 ) : (
                   <Lock className={clsx("h-4 w-4", isActive ? "text-[#255C6E]" : "")} />
                 )}
                 {chapter.title}
-              </div>
-              <div className="flex items-center gap-x-2">
-                <span className="text-xs font-normal text-gray-500">Attached documents</span>
-                {isOpen ? <ChevronDown className="h-4 w-4 cursor-pointer" /> : <ChevronRight className="h-4 w-4 cursor-pointer" />}
-              </div>
-            </button>
+              </Link>
+
+              {/* Toggle button */}
+              <button
+                onClick={() => toggleOpen(chapter.id)}
+                className="flex items-center gap-x-1 text-xs text-gray-500 hover:text-gray-700"
+              >
+                <span>Attached Documents</span>
+                {isOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+            </div>
 
             {/* Sub-item PDF (visible when open) */}
             {isOpen && (
