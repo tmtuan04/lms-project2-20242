@@ -1,5 +1,5 @@
 'use client';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, BookOpen, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import { Customer, CourseInfo } from '@/app/lib/definitions';
@@ -83,21 +83,24 @@ export default function RecentCustomers() {
         switch (selectedFilter) {
             case 'last_invoice':
             case 'highest_spent':
-                return new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                }).format(Number(item.amount));
+                return <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full shadow-md text-sm font-semibold">
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                    <span>{new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                    }).format(Number(item.amount))}</span>
+                </div>
             case 'most_enrolled':
-                return <Badge variant="default"
-                    className="bg-blue-500 text-white dark:bg-blue-600 text-sm" >
-                    📚 {item.amount} enrolled
-                </Badge>
+                return <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-full text-sm font-medium shadow-md">
+                    <BookOpen className="w-4 h-4" />
+                    <span>{item.amount} enrolled</span>
+                </div>
+
             case 'most_completed':
-                return <Badge variant="default"
-                    className="bg-blue-500 text-white dark:bg-blue-600 text-sm" >
-                    {/* <CircleCheckBig /> */}
-                    📚 {item.amount} course
-                </Badge>
+                return <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-full text-sm font-medium shadow-md">
+                    <BookOpen className="w-4 h-4" />
+                    <span>{item.amount} course</span>
+                </div>
             default:
                 return item.amount;
         }
@@ -134,7 +137,7 @@ export default function RecentCustomers() {
                                     { 'border-t': i !== 0 }
                                 )}
                             >
-                                <div className='flex py-1 text-gray-700 items-center'>{invoice.course_title}</div>
+                                <div className='flex py-1 text-gray-700 text-sm font-medium items-center'>{invoice.course_title}</div>
                                 <div className='flex flex-row items-center justify-between pb-4 cursor-pointer hover:bg-gray-100 rounded'
                                     onClick={() => handleCustomerClick(invoice)}>
                                     <div className="flex items-center">
@@ -154,9 +157,9 @@ export default function RecentCustomers() {
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="truncate text-sm font-medium md:text-base">
-                                        {renderAmount(invoice)}
-                                    </p>
+
+                                    {renderAmount(invoice)}
+
                                 </div>
                             </div>
                         );
