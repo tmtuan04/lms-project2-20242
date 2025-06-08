@@ -86,7 +86,7 @@ export default function EditCoursePage() {
             try {
                 const courseId = params.id as string;
                 const courseData = await getCourseByID(courseId);
-                console.log(courseData);
+                console.log("Course Data from DB:", courseData);
                 // Reset chapters before adding new ones
                 resetStore();
                 setIsPublished(courseData.isPublished);
@@ -110,15 +110,16 @@ export default function EditCoursePage() {
                 if (courseData.chapters && courseData.chapters.length > 0) {
                     // Sort chapters by their original order if needed
                     const sortedChapters = [...courseData.chapters].sort((a, b) => {
-                        // You might want to add a position/order field to your chapters table
-                        // For now, we'll just use the title for sorting
-                        return a.title.localeCompare(b.title);
+                        return a.order - b.order;
                     });
+
+                    console.log("Sorted Chapters for Store:", sortedChapters);
 
                     sortedChapters.forEach(chapter => {
                         addChapter({
                             id: chapter.id, // Use the original chapter ID from database
                             title: chapter.title,
+                            order: chapter.order,
                             isEditing: false
                         });
                     });
@@ -185,6 +186,7 @@ export default function EditCoursePage() {
         addChapter({
             id: newChapterId,
             title: "",
+            order: chapters.length, // Assign a temporary order for new chapters
             isEditing: true
         });
     };
@@ -429,11 +431,16 @@ export default function EditCoursePage() {
                             </div>
                             <div
                                 {...getRootProps()}
-                                className={`h-48 bg-gray-100 flex items-center justify-center rounded text-center cursor-pointer border-dashed border-2 border-gray-300 hover:border-gray-400 transition relative ${imageConfirmed ? "opacity-60" : ""}`}
+                                className={`relative h-48 w-full bg-gray-100 flex items-center justify-center rounded text-center cursor-pointer border-dashed border-2 border-gray-300 hover:border-gray-400 transition ${imageConfirmed ? "opacity-60" : ""}`}
                             >
                                 <input {...getInputProps()} />
                                 {imagePreview ? (
-                                    <Image fill src={imagePreview} alt="Course Preview" className="h-full object-cover rounded" />
+                                    <Image
+                                        fill
+                                        src={imagePreview}
+                                        alt="Course Preview"
+                                        className="object-contain rounded"
+                                    />
                                 ) : isDragActive ? (
                                     <p className="text-sm text-gray-600">Drop the image here...</p>
                                 ) : (

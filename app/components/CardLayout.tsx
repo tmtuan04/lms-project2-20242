@@ -5,10 +5,10 @@ import Card from "./Card";
 export default async function CardLayout({
   searchParams,
 }: {
-  searchParams?: Promise<{ query?: string }>; // Note the Promise type
+  searchParams?: Promise<{ query?: string }>;
 }) {
-  const params = await searchParams; // Await the searchParams
-  const query = params?.query || ''; // Safely access query
+  const params = await searchParams;
+  const query = params?.query || '';
   const courses = await fetchCourses(query);
 
   return (

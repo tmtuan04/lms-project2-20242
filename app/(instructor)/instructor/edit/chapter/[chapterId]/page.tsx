@@ -19,9 +19,7 @@ import { getChapterByID } from "@/app/lib/data";
 
 import { updateChapter } from "@/app/lib/actions/chaptersActions";
 
-
-// Check lại phần xoá video
-
+// Check lại phần xoá video: handleDeleteVideo
 
 export default function ChapterDetailPage() {
     // const router = useRouter();

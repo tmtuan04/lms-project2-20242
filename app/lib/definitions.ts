@@ -1,6 +1,61 @@
+// Khi hoàn thiện xong dự án nên chia nhỏ interface/type ra nhiều file, module
+// ---------------------------------------------------------------------------
+
+// Interface cho Course Previews
+
+interface Instructor {
+  name: string;
+  imageUrl: string;
+}
+
+export interface CourseData {
+  title: string;
+  description: string;
+  category: string;
+  instructor: Instructor;
+  enrolled: string; // Số người đăng ký
+  chapters: string; // Số chapters
+  rating: string;
+  reviews: string; // Số nhận xét
+  level: string;
+  levelDescription: string;
+  schedule: string;
+  scheduleDetails: string;
+  pace: string; // 5 cái này tạm thời fix cứng
+  imageUrl: string;
+  createdAt: string;
+}
+
+// Interface cho comment trong review
+interface ReviewComment {
+  id: number;
+  user: {
+    name: string;
+    imageUrl: string;
+  };
+  comment: string;
+  timestamp: string;
+}
+
+// Interface cho review
+export interface Review {
+  id: number;
+  user: {
+    name: string;
+    imageUrl: string;
+  };
+  rating: number;
+  comment: string;
+  timestamp: string;
+  likes: number;
+  comments: ReviewComment[];
+}
+
+// -- Hết --
+
 export interface Category {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 type ChapterDocument = {
@@ -8,7 +63,7 @@ type ChapterDocument = {
   name: string;
   type: string;
   url: string;
-}
+};
 
 export type Document = {
   id?: string;
@@ -16,7 +71,7 @@ export type Document = {
   name: string;
   type: string;
   url: string;
-}
+};
 
 export interface ChapterState {
   // Basic info
@@ -39,7 +94,7 @@ export interface ChapterState {
   documentsConfirmed: boolean;
 
   // Access
-  accessMode: 'locked' | 'free';
+  accessMode: "locked" | "free";
   accessConfirmed: boolean;
 
   // Actions
@@ -64,7 +119,7 @@ export interface ChapterState {
   removeDocument: (index: number) => void;
 
   // Access actions
-  setAccessMode: (mode: 'locked' | 'free') => void;
+  setAccessMode: (mode: "locked" | "free") => void;
   setAccessConfirmed: (confirmed: boolean) => void;
 
   // Reset store
@@ -74,6 +129,7 @@ export interface ChapterState {
 type Chapter = {
   id: string;
   title: string;
+  order: number;
   isEditing?: boolean;
   video?: {
     file: File | null;
@@ -85,8 +141,8 @@ type Chapter = {
     type: string;
     url: string;
   }[];
-  accessMode?: 'locked' | 'free';
-}
+  accessMode?: "locked" | "free";
+};
 
 export interface CourseState {
   // Course basic info
@@ -127,30 +183,29 @@ export interface CourseState {
   resetStore: () => void;
 }
 
-
 export interface PaymentStatus {
-  status: string
+  status: string;
 }
 
 export interface CourseCardProps {
-  id: string
-  instructor: string
-  title: string
-  category: string
-  chaptersCount: number
-  price: number
-  imageUrl: string
+  id: string;
+  instructor: string;
+  title: string;
+  category: string;
+  chaptersCount: number;
+  price: number;
+  imageUrl: string;
 }
 
 export interface LessonProps {
-  id: string
-  title: string
-  isLocked: boolean
-  videoUrl: string
-  content: string
-  order: number
-  courseName: string
-  courseId: string
+  id: string;
+  title: string;
+  isLocked: boolean;
+  videoUrl: string;
+  content: string;
+  order: number;
+  courseName: string;
+  courseId: string;
 }
 
 export interface Lesson {
@@ -189,7 +244,7 @@ export interface CourseTableData {
   id: string;
   title: string;
   price: number;
-  status: 'Published' | 'Draft';
+  status: "Published" | "Draft";
 }
 
 export interface CourseTableDataBasic {
@@ -204,17 +259,18 @@ export interface CourseTableDataBasic {
   chapters: {
     id: string;
     title: string;
+    order: number;
   }[];
 }
 
 export interface UserCourseCardProps {
-  id: string
-  instructor: string
-  title: string
-  category: string
-  chaptersCount: number
-  completedChaptersCount: number
-  imageUrl: string
+  id: string;
+  instructor: string;
+  title: string;
+  category: string;
+  chaptersCount: number;
+  completedChaptersCount: number;
+  imageUrl: string;
 }
 
 export interface Customer {
@@ -227,6 +283,6 @@ export interface Customer {
 }
 
 export interface RevenueChartData {
-  month: string
-  venenue: number
+  month: string;
+  venenue: number;
 }

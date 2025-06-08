@@ -13,11 +13,10 @@ const prisma = new PrismaClient();
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log(body);
+    // console.log(body);
 
     const parsed = courseSchema.parse(body);
-
-    const isPublished = parsed.status === "Published"; // 👈 chuyển status string thành boolean
+    const isPublished = parsed.status === "Published";
 
     const newCourse = await prisma.course.create({
       data: {
@@ -30,7 +29,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ...newCourse,
-      status: isPublished ? "Published" : "Draft", // 👈 trả về dạng `status` để frontend hiểu
+      status: isPublished ? "Published" : "Draft", // trả về dạng `status` để frontend hiểu
     }, { status: 201 });
   } catch (error) {
     console.error("Create Course Error:", error);

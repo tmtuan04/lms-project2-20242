@@ -91,6 +91,7 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
         chapters: {
           id: string;
           title: string;
+          order: number;
         }[];
       }[]
     >`
@@ -107,8 +108,10 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
           json_agg(
             json_build_object(
               'id', ch.id,
-              'title', ch.title
+              'title', ch.title,
+              'order', ch.order
             )
+            ORDER BY ch."order" ASC
           ) FILTER (WHERE ch.id IS NOT NULL),
           '[]'
         ) as chapters
@@ -133,7 +136,11 @@ export async function getCourseByID(id: string): Promise<CourseTableDataBasic> {
       categoryId: course.categoryId,
       instructorId: course.instructorId,
       isPublished: course.isPublished,
-      chapters: course.chapters,
+      chapters: course.chapters.map(ch => ({
+        id: ch.id,
+        title: ch.title,
+        order: ch.order || 0,
+      })),
     };
   } catch (error) {
     console.error("Error fetching course by id:", error);
@@ -384,7 +391,6 @@ export async function getInitUserCourseCards(
     console.log("Error from fetch Course Dashboard:", error);
     throw new Error("Failes to fetch user course cards");
   }
-  // return [
   //   {
   //     id: "course-001",
   //     instructor: "Nguyễn Văn A",

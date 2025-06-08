@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-
+// import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatPrice } from "@/lib/utils";
 import { CourseCardProps } from "../lib/definitions";
 
@@ -8,45 +11,66 @@ const Card: React.FC<CourseCardProps> = ({
   id,
   instructor,
   title,
-  category,
+  category, 
   chaptersCount,
   price,
   imageUrl,
 }) => {
+  // Fake instructor data (có thể sau này fetch API): số học viên, số khoá học, avatar instructor
+  const instructorInfo = {
+    name: instructor,
+    bio: "Giảng viên với 10 năm kinh nghiệm trong ngành lập trình và đào tạo.",
+    email: "instructor@example.com",
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 transform transition duration-300 hover:scale-105 hover:shadow-lg">
-      <Link href={`/${id}/chapters/1`}>
+      <Link href={`/course/${id}`}>
         <div className="relative w-full h-40 overflow-hidden rounded-t-lg">
-          <Image
-            className="object-cover"
-            src={imageUrl}
-            alt="Course Image"
-            fill
-          />
+          <Image className="object-cover" src={imageUrl} alt="Course Image" fill />
         </div>
       </Link>
       <div className="p-3">
-        <Link href={`/${id}/chapters/1`}>
-          <h3 className="text-base font-semibold text-[#4B4B4B] dark:text-white line-clamp-2 leading-tight"> 
+        <Link href={`/course/${id}`}>
+          <h3 className="text-base font-semibold text-[#4B4B4B] dark:text-white line-clamp-2 leading-tight">
             {title}
           </h3>
         </Link>
         <p className="my-2 text-sm text-gray-700 dark:text-gray-400">
           {category} •{" "}
-          <span className="font-medium hover:underline cursor-pointer">
-            {instructor}
-          </span>
+          <Dialog>
+            <DialogTrigger asChild>
+              <span className="font-medium text-blue-600 hover:underline cursor-pointer">
+                {instructor}
+              </span>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Thông tin giảng viên</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 text-sm text-gray-700">
+                <p><strong>Tên:</strong> {instructorInfo.name}</p>
+                <p><strong>Bio:</strong> {instructorInfo.bio}</p>
+                <p><strong>Email:</strong> {instructorInfo.email}</p>
+              </div>
+            </DialogContent>
+          </Dialog>
         </p>
         <div className="my-4 flex items-center justify-between">
           <span className="bg-gray-100 rounded-full px-2 py-0.5 text-xs font-semibold text-gray-500">
             {chaptersCount} chapters
           </span>
-          <span className="font-semibold text-[#4B4B4B] text-sm">
+          <span
+            className={`text-sm ${price === 0
+              ? "text-green-600 font-medium bg-green-100 px-2 py-0.5 rounded-full"
+              : "text-[#4B4B4B] font-semibold"
+              }`}
+          >
             {formatPrice(price)}
           </span>
         </div>
         <Link
-          href={`/${id}/chapters/1`}
+          href={`/course/${id}`}
           className="flex items-center justify-center w-full px-3 py-1.5 text-[0.9rem] font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-2 focus:ring-blue-300"
         >
           Read more

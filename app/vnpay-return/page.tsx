@@ -25,8 +25,6 @@ export default function VNPayReturnPage() {
         setMessage(data.message);
         setStatus(data.success ? "success" : "error");
         
-
-        // Lỗi vì data không trả về courseId
         if (data.success && data.courseId) {
           const timer = setInterval(() => {
             setCountdown((prev) => {
