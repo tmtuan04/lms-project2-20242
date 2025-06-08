@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
+
   const courseId = request.nextUrl.pathname.split("/").pop();
 
   if (!courseId) {

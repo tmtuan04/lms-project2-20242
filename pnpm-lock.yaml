@@ -62,9 +62,15 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@types/canvas-confetti':
+        specifier: ^1.9.0
+        version: 1.9.0
       antd:
         specifier: ^5.24.5
         version: 5.24.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      canvas-confetti:
+        specifier: ^1.9.3
+        version: 1.9.3
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -6431,7 +6437,9 @@ snapshots:
       '@radix-ui/react-slot': 1.1.2(@types/react@19.1.0)(react@19.1.0)
       '@radix-ui/react-tooltip': 1.1.8(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/react-table': 8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@types/canvas-confetti': 1.9.0
       antd: 5.24.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      canvas-confetti: 1.9.3
       class-variance-authority: 0.7.1
       cloudinary: 2.6.1
       clsx: 2.1.1

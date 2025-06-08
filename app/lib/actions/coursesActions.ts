@@ -4,20 +4,19 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Cái này đang thừa
 export async function createCourse({
   title,
   description,
   imageUrl,
   price,
   categoryId,
-  chapters, // string[] chỉ chứa title
+  chapters,
   instructorId,
 }: {
   title: string;
   description: string;
   imageUrl: string;
-  chapters: string[]; // danh sách title
+  chapters: string[];
   price: number | string;
   categoryId: string;
   instructorId: string;
@@ -34,8 +33,8 @@ export async function createCourse({
     throw new Error("Missing required fields");
   }
 
-  // Fill thêm trường courseUrl (/course/)
-  const course = await prisma.course.create({
+  // 1. Tạo course trước (chưa có courseUrl)
+  const createdCourse = await prisma.course.create({
     data: {
       title,
       description,
@@ -44,17 +43,26 @@ export async function createCourse({
       categoryId,
       instructorId,
       chapters: {
-        create: chapters.map((chapterTitle) => ({
+        create: chapters.map((chapterTitle, index) => ({
           title: chapterTitle,
+          order: index,
         })),
       },
     },
+  });
+
+  // 2. Update lại courseUrl với id vừa tạo
+  const updatedCourse = await prisma.course.update({
+    where: { id: createdCourse.id },
+    data: {
+      courseUrl: `/course/${createdCourse.id}`,
+    },
     include: {
-      chapters: true, // Optional: trả về luôn danh sách chương
+      chapters: true,
     },
   });
 
-  return course;
+  return updatedCourse;
 }
 
 export async function updateCourse({
@@ -109,8 +117,9 @@ export async function updateCourse({
       categoryId,
       instructorId,
       chapters: {
-        create: chapters.map((chapterTitle) => ({
+        create: chapters.map((chapterTitle, index) => ({
           title: chapterTitle,
+          order: index,
         })),
       },
     },

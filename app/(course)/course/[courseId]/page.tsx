@@ -402,7 +402,7 @@ const CourseDetailsPage = () => {
 
       {/* Navigation Buttons */}
       <div className="flex justify-center space-x-6">
-        <Button variant="outline" className="px-10 py-3">Back</Button>
+        <Link href={`/`}><Button variant="outline" className="px-10 py-3">Back</Button></Link>
         <Link href={`/${courseId}/chapters/1`}><Button variant="outline" className="px-10 py-3">Course Details <ArrowRight /></Button></Link>
       </div>
 

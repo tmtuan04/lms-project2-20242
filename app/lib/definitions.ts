@@ -129,6 +129,7 @@ export interface ChapterState {
 type Chapter = {
   id: string;
   title: string;
+  order: number;
   isEditing?: boolean;
   video?: {
     file: File | null;
@@ -258,6 +259,7 @@ export interface CourseTableDataBasic {
   chapters: {
     id: string;
     title: string;
+    order: number;
   }[];
 }
 
