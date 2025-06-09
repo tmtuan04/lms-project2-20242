@@ -70,6 +70,6 @@
     "prisma": "^6.6.0",
     "prisma-erd-generator": "^2.0.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5.8.3"
   }
 }
