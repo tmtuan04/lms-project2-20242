@@ -14,6 +14,8 @@ import {
   CourseTableDataBasic,
   Customer,
   RevenueChartData,
+  CourseInfo,
+  CourseRevenueItem,
 } from "./definitions";
 
 export async function checkUserEnrolled(
@@ -189,15 +191,15 @@ export async function fetchCardAnalys(instructorId: string) {
       FROM "Course" c
       WHERE c."instructorId" = ${instructorId}
     `;
-    const customerCountPromise = sql`SELECT COUNT(DISTINCT p."userId")
-      FROM "Course" c
-      JOIN "Payment" p ON c.id = p."courseId"
-      WHERE c."instructorId" = ${instructorId}
-    `;
+    // const customerCountPromise = sql`SELECT COUNT(DISTINCT p."userId")
+    //   FROM "Course" c
+    //   JOIN "Payment" p ON c.id = p."courseId"
+    //   WHERE c."instructorId" = ${instructorId}
+    // `;
     const invoiceCountPromise = sql`SELECT COUNT(*)
       FROM "Course" c
       JOIN "Payment" p ON c.id = p."courseId"
-      WHERE c."instructorId" = ${instructorId}
+      WHERE c."instructorId" = ${instructorId} and p."status" = 'SUCCESS'
     `;
     const totalPaidInvoicesPromise = sql`
       SELECT SUM(p."amount" ::NUMERIC) as total
@@ -206,12 +208,12 @@ export async function fetchCardAnalys(instructorId: string) {
       WHERE c."instructorId" = ${instructorId} and p."status" = 'SUCCESS'
     `;
     //Fetch theo CourseEnrollment
-    // const customerCountPromise = sql`
-    //   SELECT COUNT(DISTINCT ce."userId")
-    //   FROM "Course" c
-    //   JOIN "CourseEnrollment" ce ON c.id = ce."courseId"
-    //   WHERE c."instructorId" = ${instructorId}
-    // `;
+    const customerCountPromise = sql`
+      SELECT COUNT(DISTINCT ce."userId")
+      FROM "Course" c
+      JOIN "CourseEnrollment" ce ON c.id = ce."courseId"
+      WHERE c."instructorId" = ${instructorId}
+    `;
 
     const [
       courseCountResult,
@@ -255,9 +257,10 @@ export async function getRecentCustomer(
         image_url: string;
         amount: number;
         course_title: string;
+        joined_at: Date;
       }[]
     >`
-      SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, p."amount"::NUMERIC, c."title" AS course_title
+      SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, p."amount"::NUMERIC, c."title" AS course_title,u."createdAt" AS joined_at
       FROM "Payment" p
       JOIN "User" u ON p."userId" = u.id
       JOIN "Course" c ON p."courseId" = c.id
@@ -273,6 +276,7 @@ export async function getRecentCustomer(
         email: string;
         image_url: string;
         amount: number;
+        joined_at: Date;
         course_title: string;
       }) => ({
         id: row.id,
@@ -280,6 +284,7 @@ export async function getRecentCustomer(
         amount: row.amount || 0,
         email: row.email || "",
         course_title: row.course_title || "",
+        joined_at: row.joined_at || "",
         image_url:
           row.image_url ||
           "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg?uid=R122875801&ga=GA1.1.1700211466.1746505583&semt=ais_hybrid&w=740",
@@ -342,9 +347,71 @@ export async function getRevenueData(
 }
 //------------------------------------------------------
 
+//------------------------------------------------------
+
+export async function getCourseRevenueDataByMonth(
+  instructorId: string
+): Promise<CourseRevenueItem[]> {
+  try {
+    const data = await sql<
+      { month: string; courseName: string; revenue: number }[]
+    >`
+      WITH months AS (
+        SELECT to_char(generate_series(1, extract(month from CURRENT_DATE)::int), 'FM00') AS month
+      )
+      SELECT
+        m.month,
+        c."title" as "courseName",
+        COALESCE(SUM(
+          CASE
+            WHEN p."status" = 'SUCCESS'
+            THEN p."amount"::NUMERIC
+            ELSE 0
+          END
+        ), 0) AS revenue
+      FROM months m
+      CROSS JOIN (
+        SELECT DISTINCT c."title", c."id"
+        FROM "Course" c
+        WHERE c."instructorId" = ${instructorId}
+      ) c
+      LEFT JOIN "Payment" p ON to_char(p."updatedAt", 'MM') = m.month AND p."courseId" = c."id"
+      GROUP BY m.month, c."title"
+      ORDER BY m.month;
+    `;
+
+    const monthMap = new Map<string, { [course: string]: number }>();
+
+    data.forEach(({ month, courseName, revenue }) => {
+      const monthName = MONTHS[parseInt(month, 10) - 1];
+      if (!monthMap.has(monthName)) {
+        monthMap.set(monthName, {});
+      }
+      monthMap.get(monthName)![courseName] = Number(revenue);
+    });
+
+    const result: CourseRevenueItem[] = [];
+
+    for (const [month, courseRevenues] of monthMap.entries()) {
+      result.push({ month, ...courseRevenues });
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching course revenue by month:", error);
+    throw new Error("Failed to fetch course revenue chart data");
+  }
+}
+//------------------------------------------------------
+
 export async function getInitUserCourseCards(
   userId: string
 ): Promise<UserCourseCardProps[]> {
+  if (!userId) {
+    console.warn("No userId provided to getInitUserCourseCards.");
+    return [];
+  }
+
   try {
     const data = await sql<UserCourseCardProps[]>`
       SELECT 
@@ -391,58 +458,177 @@ export async function getInitUserCourseCards(
     console.log("Error from fetch Course Dashboard:", error);
     throw new Error("Failes to fetch user course cards");
   }
-  //   {
-  //     id: "course-001",
-  //     instructor: "Nguyễn Văn A",
-  //     title: "Lập trình React cơ bản",
-  //     category: "Lập trình web",
-  //     chaptersCount: 16,
-  //     completedChaptersCount: 0,
-  //     imageUrl:
-  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-  //   },
-  //   {
-  //     id: "course-002",
-  //     instructor: "Trần Thị B",
-  //     title: "Thiết kế UI/UX chuyên sâu",
-  //     category: "Thiết kế",
-  //     chaptersCount: 12,
-  //     completedChaptersCount: 5,
-  //     imageUrl:
-  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-  //   },
-  //   {
-  //     id: "course-003",
-  //     instructor: "Lê Văn C",
-  //     title: "Python cho người mới bắt đầu",
-  //     category: "Lập trình",
-  //     chaptersCount: 20,
-  //     completedChaptersCount: 20,
-  //     imageUrl:
-  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-  //   },
-  //   {
-  //     id: "course-004",
-  //     instructor: "Lê Văn C",
-  //     title: "Python cho người mới bắt đầu",
-  //     category: "Lập trình",
-  //     chaptersCount: 20,
-  //     completedChaptersCount: 20,
-  //     imageUrl:
-  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-  //   },
-  //   {
-  //     id: "course-005",
-  //     instructor: "Lê Văn C",
-  //     title: "Python cho người mới bắt đầu",
-  //     category: "Lập trình",
-  //     chaptersCount: 20,
-  //     completedChaptersCount: 20,
-  //     imageUrl:
-  //       "https://img.freepik.com/free-vector/blockchain-background-with-isometric-shapes_23-2147869900.jpg?t=st=1744095558~exp=1744099158~hmac=513fbe7193e61e2688e0ff914d8a660be0b02d2f01d4f097c0e0d3b96f41fc94&w=826",
-  //   },
-  // ];
 }
+
+export async function getUserCoursesWithProgress(
+  userId: string,
+  instructorId: string
+): Promise<CourseInfo[]> {
+  try {
+    const data = await sql<{
+      id: string;
+      title: string;
+      chaptersCount: number;
+      image_url: string;
+      coursejoin: Date;
+      completedChaptersCount: number;
+    }[]>`
+      SELECT 
+        c.id AS id,
+        c.title,
+        c."imageUrl" AS image_url,
+        ce."createdAt" AS coursejoin,
+        COUNT(DISTINCT ch.id) AS "chaptersCount",
+        COUNT(DISTINCT CASE 
+          WHEN cp."isCompleted" = true THEN ch.id 
+          END) AS "completedChaptersCount"
+      FROM "CourseEnrollment" ce
+      JOIN "Course" c ON ce."courseId" = c.id
+      JOIN "User" u ON c."instructorId" = u.id
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      LEFT JOIN "ChapterProgress" cp ON cp."chapterId" = ch.id AND cp."userId" = ce."userId"
+      WHERE ce."userId" = ${userId}
+        AND c."instructorId" = ${instructorId}
+      GROUP BY c.id, c.title, c."imageUrl", ce."createdAt"
+      ORDER BY ce."createdAt" DESC;
+    `;
+    return data.map(row => ({
+      id: row.id,
+      title: row.title || "Untitled Course",
+      image_url: row.image_url || "",
+      coursejoin: row.coursejoin || "",
+      completedPercent:
+        row.chaptersCount === 0
+          ? 0
+          : Math.round((row.completedChaptersCount / row.chaptersCount) * 100),
+    }));
+  } catch (error) {
+    console.log("Error in getUserCoursesWithProgress:", error);
+    throw new Error("Failed to fetch courses with progress");
+  }
+}
+
+
+export async function getTopEnrolledCustomers(instructorId: string): Promise<Customer[]> {
+  try {
+    const data = await sql<
+      {
+        id: string;
+        name: string;
+        email: string;
+        image_url: string;
+        joined_at: Date;
+        enroll_count: number;
+      }[]
+    >`
+      SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, COUNT(*) AS enroll_count, u."createdAt" AS joined_at
+      FROM "Payment" p
+      JOIN "User" u ON p."userId" = u.id
+      JOIN "Course" c ON p."courseId" = c.id
+      WHERE p."status" = 'SUCCESS' AND c."instructorId" = ${instructorId}
+      GROUP BY u.id, u.name, u.email, u."imageUrl"
+      ORDER BY enroll_count DESC
+      LIMIT 5
+    `;
+
+    return data.map(row => ({
+      id: row.id,
+      name: row.name || "Anonymous",
+      email: row.email || "",
+      joined_at: row.joined_at || new Date(),
+      image_url: row.image_url || "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg",
+      amount: Number(row.enroll_count),
+    }));
+  } catch (error) {
+    console.error("Error fetch top enrolled customers:", error);
+    throw new Error("Failed to fetch top enrolled customers");
+  }
+}
+
+export async function getTopSpenders(instructorId: string): Promise<Customer[]> {
+  try {
+    const data = await sql<
+      {
+        id: string;
+        name: string;
+        email: string;
+        joined_at: Date;
+        image_url: string;
+        total_spent: number;
+      }[]
+    >`
+      SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, SUM(p."amount" ::NUMERIC) AS total_spent, u."createdAt" AS joined_at
+      FROM "Payment" p
+      JOIN "User" u ON p."userId" = u.id
+      JOIN "Course" c ON p."courseId" = c.id
+      WHERE p."status" = 'SUCCESS' AND c."instructorId" = ${instructorId}
+      GROUP BY u.id, u.name, u.email, u."imageUrl"
+      ORDER BY total_spent DESC
+      LIMIT 5
+    `;
+
+    return data.map(row => ({
+      id: row.id,
+      name: row.name || "Anonymous",
+      email: row.email || "",
+      joined_at: row.joined_at || new Date(),
+      image_url: row.image_url || "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg",
+      amount: Number(row.total_spent),
+    }));
+  } catch (error) {
+    console.error("Error fetch top spenders:", error);
+    throw new Error("Failed to fetch top spenders");
+  }
+}
+export async function getTopCompletedStudents(
+  instructorId: string
+): Promise<Customer[]> {
+  try {
+    const data = await sql<{
+      id: string;
+      name: string;
+      email: string;
+      image_url: string;
+      joined_at: Date;
+      amount: number;
+    }[]>`
+      SELECT 
+        u.id,
+        u.name,
+        u.email,
+        u."imageUrl" AS image_url,
+        u."createdAt" AS joined_at,
+        COUNT(DISTINCT c.id) AS amount
+      FROM "CourseEnrollment" ce
+      JOIN "Course" c ON ce."courseId" = c.id
+      JOIN "User" u ON ce."userId" = u.id
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      LEFT JOIN "ChapterProgress" cp 
+        ON cp."chapterId" = ch.id AND cp."userId" = ce."userId"
+      WHERE c."instructorId" = ${instructorId}
+      GROUP BY u.id, u.name, u.email, u."imageUrl"
+      HAVING COUNT(DISTINCT CASE WHEN cp."isCompleted" = true THEN ch.id END) >=
+             COUNT(DISTINCT ch.id)
+      ORDER BY amount DESC
+      LIMIT 5;
+    `;
+
+    return data.map((row) => ({
+      id: row.id,
+      name: row.name || "Anonymous",
+      email: row.email || "",
+      joined_at: row.joined_at || new Date(),
+      image_url: row.image_url || "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg",
+      amount: Number(row.amount || 0),
+    }));
+  } catch (error) {
+    console.error("Error in getTopCompletedStudents:", error);
+    throw new Error("Failed to fetch top completed students");
+  }
+}
+
+
+
 
 // Check isInstructor - Sau bỏ cái này đi
 export const checkIsInstructor = async (userId: string) => {
@@ -498,15 +684,14 @@ export const fetchCourses = async (query?: string) => {
       LEFT JOIN "Chapter" ch ON ch."courseId" = c.id  -- Join với bảng Chapter
       WHERE 
         c."isPublished" = true
-        ${
-          query
-            ? sql`AND (
+        ${query
+        ? sql`AND (
           LOWER(c.title) LIKE ${`%${query.toLowerCase()}%`} OR
           LOWER(u.name) LIKE ${`%${query.toLowerCase()}%`} OR
           LOWER(cat.name) LIKE ${`%${query.toLowerCase()}%`}
         )`
-            : sql``
-        }
+        : sql``
+      }
       GROUP BY c.id, c."courseUrl", c.title, cat.name, c.price, c."imageUrl", u.name
       ORDER BY c."createdAt" DESC
     `;
