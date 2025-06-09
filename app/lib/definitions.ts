@@ -187,15 +187,16 @@ export interface PaymentStatus {
   status: string;
 }
 
-export interface CourseCardProps {
+export type CourseCardProps = {
   id: string;
   instructor: string;
+  instructorId: string;
   title: string;
   category: string;
   chaptersCount: number;
   price: number;
   imageUrl: string;
-}
+};
 
 export interface LessonProps {
   id: string;

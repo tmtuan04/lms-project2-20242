@@ -674,14 +674,15 @@ export const fetchCourses = async (query?: string) => {
         c."courseUrl", 
         c.title, 
         cat.name AS category, 
-        COUNT(ch.id) as "chaptersCount",  -- Đếm số lượng chapters
+        COUNT(ch.id) as "chaptersCount",
         c.price, 
         c."imageUrl", 
-        u.name as instructor
+        u.name as instructor,
+        u.id as "instructorId"
       FROM "Course" c 
       JOIN "Category" cat ON cat.id = c."categoryId"
       JOIN "User" u ON c."instructorId" = u.id
-      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id  -- Join với bảng Chapter
+      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
       WHERE 
         c."isPublished" = true
         ${query
@@ -692,7 +693,7 @@ export const fetchCourses = async (query?: string) => {
         )`
         : sql``
       }
-      GROUP BY c.id, c."courseUrl", c.title, cat.name, c.price, c."imageUrl", u.name
+      GROUP BY c.id, c."courseUrl", c.title, cat.name, c.price, c."imageUrl", u.name, u.id
       ORDER BY c."createdAt" DESC
     `;
 
@@ -821,5 +822,94 @@ export async function checkUserCourseAccess(
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to check user course access");
+  }
+}
+
+// Thêm type definition cho instructor details
+export type InstructorDetails = {
+  id: string;
+  name: string;
+  email: string;
+  imageUrl: string | null;
+  totalCourses: number;
+  totalStudents: number;
+  featuredCourses: {
+    id: string;
+    title: string;
+    imageUrl: string | null;
+    price: number;
+    enrolledCount: number;
+  }[];
+};
+
+// Fetch instructor details by ID
+export async function getInstructorDetails(instructorId: string): Promise<InstructorDetails> {
+  try {
+    // Get basic instructor info
+    const instructorData = await sql<{
+      id: string;
+      name: string;
+      email: string;
+      imageUrl: string | null;
+    }[]>`
+      SELECT id, name, email, "imageUrl"
+      FROM "User"
+      WHERE id = ${instructorId} AND "isInstructor" = true
+    `;
+
+    if (!instructorData.length) {
+      throw new Error("Instructor not found");
+    }
+
+    // Get total courses count
+    const coursesCount = await sql<{ count: number }[]>`
+      SELECT COUNT(*) as count
+      FROM "Course"
+      WHERE "instructorId" = ${instructorId}
+    `;
+
+    // Get total students count (unique students across all courses)
+    const studentsCount = await sql<{ count: number }[]>`
+      SELECT COUNT(DISTINCT ce."userId") as count
+      FROM "Course" c
+      JOIN "CourseEnrollment" ce ON c.id = ce."courseId"
+      WHERE c."instructorId" = ${instructorId}
+    `;
+
+    // Get featured courses (top 3 courses by enrollment)
+    const featuredCourses = await sql<{
+      id: string;
+      title: string;
+      imageUrl: string | null;
+      price: number;
+      enrolledCount: number;
+    }[]>`
+      SELECT 
+        c.id,
+        c.title,
+        c."imageUrl",
+        c.price,
+        COUNT(DISTINCT ce."userId") as "enrolledCount"
+      FROM "Course" c
+      LEFT JOIN "CourseEnrollment" ce ON c.id = ce."courseId"
+      WHERE c."instructorId" = ${instructorId}
+      GROUP BY c.id, c.title, c."imageUrl", c.price
+      ORDER BY "enrolledCount" DESC
+      LIMIT 3
+    `;
+
+    return {
+      ...instructorData[0],
+      totalCourses: Number(coursesCount[0].count),
+      totalStudents: Number(studentsCount[0].count),
+      featuredCourses: featuredCourses.map(course => ({
+        ...course,
+        price: Number(course.price) || 0,
+        enrolledCount: Number(course.enrolledCount)
+      }))
+    };
+  } catch (error) {
+    console.error("Error fetching instructor details:", error);
+    throw new Error("Failed to fetch instructor details");
   }
 }
