@@ -8,7 +8,7 @@ function AnalyticsPage() {
     return (
         <>
             <main className='p-8'>
-                <h1 className='mb-4 text-xl md:text-2xl'>
+                <h1 className='mb-4 text-xl md:text-2xl font-bold'>
                     Analytics Dashboard
                 </h1>
                 <Suspense fallback={<div className="animate-pulse rounded-xl bg-gray-200" />}>

@@ -279,10 +279,21 @@ export interface Customer {
   email: string;
   image_url: string;
   amount: number;
-  course_title: string;
+  course_title?: string;
+  joined_at: Date;
 }
 
 export interface RevenueChartData {
   month: string;
   venenue: number;
+}
+export type CourseRevenueItem = { month: string } & Record<string, number | string>;
+
+
+export interface CourseInfo {
+  id: string;
+  title: string;
+  completedPercent: number,
+  image_url: string,
+  coursejoin: Date
 }
