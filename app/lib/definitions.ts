@@ -196,6 +196,9 @@ export type CourseCardProps = {
   chaptersCount: number;
   price: number;
   imageUrl: string;
+  avgRating?: number;
+  enrollmentCount?: number;
+  reviewCount?: number;
 };
 
 export interface LessonProps {

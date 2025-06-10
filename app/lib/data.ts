@@ -678,11 +678,16 @@ export const fetchCourses = async (query?: string) => {
         c.price, 
         c."imageUrl", 
         u.name as instructor,
-        u.id as "instructorId"
+        u.id as "instructorId",
+        COALESCE(AVG(cr."rating"), 0) as "avgRating",
+        COUNT(DISTINCT cr."userId") as "reviewCount",
+        COUNT(DISTINCT ce."userId") as "enrollmentCount"
       FROM "Course" c 
       JOIN "Category" cat ON cat.id = c."categoryId"
       JOIN "User" u ON c."instructorId" = u.id
       LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+      LEFT JOIN "CourseEnrollment" ce ON ce."courseId" = c.id
+      LEFT JOIN "CourseReview" cr ON cr."courseId" = c.id
       WHERE 
         c."isPublished" = true
         ${query
