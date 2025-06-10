@@ -22,34 +22,14 @@ const fallbackCourse: CourseData = {
   chapters: '0',
   rating: '0.0',
   reviews: '0',
-  level: 'Not specified',
-  levelDescription: 'Information is being updated',
-  schedule: 'Not available',
-  scheduleDetails: 'No specific schedule yet',
-  pace: 'Pace not defined',
+  level: 'Beginner level',
+  levelDescription: 'No prior experience required',
+  schedule: 'Flexible schedule',
+  scheduleDetails: '2 months, 10 hours a week',
+  pace: 'Learn at your own pace',
   imageUrl: '/default-logo.png',
   createdAt: new Date().toISOString(),
 };
-
-// const courseData = {
-//   title: 'Introduction to JavaScript',
-//   description: 'Start your web development journey by learning JavaScript — the core programming language of the web. This course introduces the fundamentals of JavaScript, helping you build interactive websites and understand how the browser executes code!',
-//   instructor: {
-//     name: 'Tu Minh Tuan',
-//     avatar: '/avatar.png',
-//   },
-//   enrolled: '1,234,567',
-//   chapters: '17',
-//   rating: '5.0',
-//   reviews: '232.000',
-//   level: 'Beginner level',
-//   levelDescription: 'No prior experience required',
-//   schedule: 'Flexible schedule',
-//   scheduleDetails: '2 months, 10 hours a week',
-//   pace: 'Learn at your own pace',
-//   logo: 'https://www.svgrepo.com/show/303206/javascript-logo.svg',
-//   createdAt: '2024-01-15T08:00:00',
-// };
 
 const CourseDetailsPage = () => {
   const { courseId } = useParams();

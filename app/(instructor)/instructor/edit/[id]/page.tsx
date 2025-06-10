@@ -464,7 +464,7 @@ export default function EditCoursePage() {
                                 {chapters.length === 0 ? "No chapters" : "Edit and confirm each chapter name"}
                             </div>
                             <ul className="mt-2 space-y-1">
-                                {chapters.map((chapter) => (
+                                {chapters.map((chapter, index) => (
                                     <li key={chapter.id} className="flex items-center gap-2">
                                         {chapter.isEditing ? (
                                             <>
@@ -489,7 +489,7 @@ export default function EditCoursePage() {
                                                     href={`/instructor/edit/chapter/${chapter.id}`}
                                                     className="block flex-1 p-2 border rounded-md bg-gray-50 text-sm hover:bg-gray-100 transition"
                                                 >
-                                                    {chapter.title}
+                                                    {index}. {chapter.title}
                                                 </Link>
                                                 <Button
                                                     variant="outline"
