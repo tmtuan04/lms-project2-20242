@@ -32,9 +32,11 @@ const ChapterPage: NextPage<ChapterPageProps> = async ({ params }) => {
     const chapterIndex = parseInt(chapterId) - 1;
     const chapter = course.chapters[chapterIndex] ?? course.chapters[0];
 
+    // console.log("Course chapter:", course.chapters);
+
     return (
       <div className="p-6 max-w-5xl mx-auto">
-        <ChapterContent chapter={chapter} courseId={courseId} />
+        <ChapterContent chapter={chapter} courseId={courseId} courseChapters={course.chapters}/>
       </div>
     );
 

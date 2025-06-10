@@ -19,10 +19,7 @@ import { getChapterByID } from "@/app/lib/data";
 
 import { updateChapter } from "@/app/lib/actions/chaptersActions";
 
-
-// Check lại phần xoá video
-
-
+// Check lại phần xoá video: handleDeleteVideo
 export default function ChapterDetailPage() {
     // const router = useRouter();
     const params = useParams();
@@ -309,8 +306,8 @@ export default function ChapterDetailPage() {
     // Confirm conditions
     const canConfirmTitle = title.trim() !== "" && !titleConfirmed;
     const canConfirmDescription = description.trim() !== "" && !descriptionConfirmed;
-    const canConfirmDocuments = documents.length > 0 && !documentsConfirmed;
-    const canConfirmVideo = (videoPreview || videoUrl) && !videoConfirmed;
+    const canConfirmDocuments = !documentsConfirmed;
+    const canConfirmVideo = !videoConfirmed;
 
     // Check if all fields are confirmed
     const completedCount = [
@@ -361,7 +358,13 @@ export default function ChapterDetailPage() {
             }
 
             const data = await res.json();
-            return data.secure_url || null;
+            if (data.secure_url) {
+                toast.success("Upload document successful ✅");
+                return data.secure_url;
+            } else {
+                toast.error("Upload succeeded but no URL returned.");
+                return null;
+            }
         } catch (error) {
             const err = error as Error
             toast.error(`Upload error: ${err.message}`);
@@ -549,7 +552,7 @@ export default function ChapterDetailPage() {
                     <section className="border p-4 rounded-md">
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="font-medium flex items-center gap-2">
-                                <FileText size={18} /> Chapter Documents
+                                <FileText size={18} /> Chapter Documents (Optional)
                             </h2>
                             <div className="flex gap-2">
                                 {documentsConfirmed ? (
@@ -660,20 +663,24 @@ export default function ChapterDetailPage() {
                         {/* Confirmed Documents List */}
                         {documentsConfirmed && (
                             <div className="space-y-2">
-                                {documents.map((doc, index) => (
-                                    <div key={index} className="flex items-center p-2 bg-gray-50 rounded-md">
-                                        <div className="flex items-center gap-2">
-                                            {doc.type === 'application/pdf' ? (
-                                                <FileText size={16} className="text-red-500" />
-                                            ) : doc.type === 'image' ? (
-                                                <ImageIcon size={16} className="text-blue-500" />
-                                            ) : (
-                                                <LinkIconLucide size={16} className="text-gray-500" />
-                                            )}
-                                            <span className="text-sm truncate max-w-[200px]">{doc.name}</span>
+                                {documents.length === 0 ? (
+                                    <p className="text-sm text-gray-500 italic text-center">No documents available.</p>
+                                ) : (
+                                    documents.map((doc, index) => (
+                                        <div key={index} className="flex items-center p-2 bg-gray-50 rounded-md">
+                                            <div className="flex items-center gap-2">
+                                                {doc.type === 'application/pdf' ? (
+                                                    <FileText size={16} className="text-red-500" />
+                                                ) : doc.type === 'image' ? (
+                                                    <ImageIcon size={16} className="text-blue-500" />
+                                                ) : (
+                                                    <LinkIconLucide size={16} className="text-gray-500" />
+                                                )}
+                                                <span className="text-sm truncate max-w-[200px]">{doc.name}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         )}
                     </section>
@@ -681,11 +688,12 @@ export default function ChapterDetailPage() {
 
                 {/* Right Side */}
                 <div className="space-y-6">
+
                     {/* Video Section */}
                     <section className="border p-4 rounded-md">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="font-medium flex items-center gap-2">
-                                <Video size={18} /> Chapter Video
+                                <Video size={18} /> Chapter Video (Optional)
                             </h2>
                             <div className="flex gap-2">
                                 {videoConfirmed ? (
@@ -708,7 +716,11 @@ export default function ChapterDetailPage() {
                                 )}
                             </div>
                         </div>
-
+                        {videoConfirmed && !videoPreview && (
+                            <p className="text-sm text-gray-500 italic m-2 text-center">
+                                No video uploaded or linked for this chapter.
+                            </p>
+                        )}
                         {/* Upload section only if editing or no video */}
                         {(!videoPreview || isEditingVideo) && (
                             <>
@@ -716,7 +728,7 @@ export default function ChapterDetailPage() {
                                 <div
                                     {...getRootProps()}
                                     className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-                                        ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
+                    ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
                                 >
                                     <input {...getInputProps()} />
                                     <div className="flex flex-col items-center gap-2">
@@ -772,7 +784,6 @@ export default function ChapterDetailPage() {
                                     <p className="text-sm text-gray-600">
                                         {videoFile ? `File: ${videoFile.name}` : 'Video URL added'}
                                     </p>
-                                    {/* Delete Button for video */}
                                     <DeleteConfirmDialog
                                         trigger={
                                             <Button

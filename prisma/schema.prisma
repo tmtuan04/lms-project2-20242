@@ -74,6 +74,8 @@ model Chapter {
   description String? @db.Text
   videoUrl    String? @db.Text
   isLocked    Boolean @default(true)
+  
+  order       Int
 
   courseId    String
   course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
