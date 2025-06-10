@@ -107,7 +107,7 @@ export default function Sidebar({ courseId, chapters }: SidebarProps) {
 
             {isOpen && Array.isArray(chapter.attachments) && chapter.attachments.length > 0 && (
               <div className="flex flex-col">
-                {chapter.attachments.map((attachment) => (
+                {chapter.attachments.map((attachment, index) => (
                   <Link
                     key={attachment.id}
                     href={attachment.url}
@@ -117,7 +117,7 @@ export default function Sidebar({ courseId, chapters }: SidebarProps) {
                     title={attachment.name}
                   >
                     <FileText className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate max-w-[240px]">{attachment.name}</span>
+                    <span className="truncate max-w-[240px]">{index}. {attachment.name}</span>
                   </Link>
                 ))}
               </div>

@@ -24,6 +24,7 @@ export default async function CardLayout({
             <Card
               key={course.id}
               id={course.id}
+              instructorId={course.instructorId}
               instructor={course.instructor}
               imageUrl={course.imageUrl}
               title={course.title}

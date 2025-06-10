@@ -26,7 +26,6 @@ export async function updateChapter({
       !chapterId ||
       !title ||
       !description ||
-      !videoUrl ||
       !attachments ||
       isLocked === undefined ||
       isLocked === null ||
@@ -34,17 +33,6 @@ export async function updateChapter({
     ) {
       throw new Error("Missing required fields");
     }
-
-    console.log(
-      "Data in API Update:",
-      chapterId,
-      title,
-      description,
-      videoUrl,
-      attachments,
-      isLocked,
-      courseId
-    );
 
     const chapter = await prisma.chapter.update({
       where: {
