@@ -2,7 +2,7 @@
 
 // Demo with shadCN UI
 
-import { TrendingUp, TrendingDown } from "lucide-react"
+import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, LineChart, Line, XAxis } from "recharts"
 import { useState, useEffect } from "react"
 
@@ -101,7 +101,7 @@ export default function RevenueChart() {
         <div className="flex w-full flex-col md:col-span-4">
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-start w-full">
+                    <div className="flex grow justify-between items-start w-full">
                         {/* Title + Description bên trái */}
                         <div className="flex flex-col">
                             <CardTitle>Revenue</CardTitle>
@@ -121,51 +121,62 @@ export default function RevenueChart() {
                         </Select>
                     </div>
                 </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className="flex justify-center items-center h-60">
-                            <span className="animate-spin rounded-full border-4 border-t-transparent h-12 w-12"></span>
-                            <span className="ml-4 font-medium text-lg">Loading Data ...</span>
+                {chartData.length === 0 && !isLoading ?
+                    <CardContent>
+                        <div className="flex flex-col items-center justify-center gap-4">
+                            <AlertCircle className="w-12 h-12 text-gray-400" />
+                            <h2 className="text-lg font-semibold text-gray-700">Chưa có doanh thu</h2>
+                            <p className="text-sm text-gray-500 max-w-xs">
+                                Hiện tại bạn chưa có doanh thu nào từ các khóa học trong năm nay. Hãy chia sẻ và quảng bá để có những lượt mua đầu tiên!
+                            </p>
                         </div>
-                    ) : (
-                        selectedFilter === "total_revenue" ? (
-                            <ChartContainer config={chartConfig}>
-
-                                <BarChart data={chartData}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} tickFormatter={(v) => v.slice(0, 3)} />
-                                    <ChartTooltip cursor content={<ChartTooltipContent indicator="dashed" />} />
-                                    <Bar dataKey="venenue" fill="var(--color-venenue)" radius={4} />
-                                </BarChart>
-                            </ChartContainer>
+                    </CardContent> :
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-60">
+                                <span className="animate-spin rounded-full border-4 border-t-transparent h-12 w-12"></span>
+                                <span className="ml-4 font-medium text-lg">Loading Data ...</span>
+                            </div>
                         ) : (
-                            <ChartContainer config={{}}>
-                                <LineChart data={chartData} margin={{ left: 12, right: 12 }}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="month"
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tickMargin={8}
-                                        tickFormatter={(value) => value.slice(0, 3)}
-                                    />
-                                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                                    {courseNames.map((course, idx) => (
-                                        <Line
-                                            key={course}
-                                            dataKey={course}
-                                            type="monotone"
-                                            stroke={colors[idx % colors.length]}
-                                            strokeWidth={2}
-                                            dot={false}
-                                        />
-                                    ))}
-                                </LineChart>
-                            </ChartContainer>
-                        )
+                            selectedFilter === "total_revenue" ? (
+                                <ChartContainer config={chartConfig}>
 
-                    )}
-                </CardContent>
+                                    <BarChart data={chartData}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} tickFormatter={(v) => v.slice(0, 3)} />
+                                        <ChartTooltip cursor content={<ChartTooltipContent indicator="dashed" />} />
+                                        <Bar dataKey="venenue" fill="var(--color-venenue)" radius={4} />
+                                    </BarChart>
+                                </ChartContainer>
+                            ) : (
+                                <ChartContainer config={{}}>
+                                    <LineChart data={chartData} margin={{ left: 12, right: 12 }}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="month"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickMargin={8}
+                                            tickFormatter={(value) => value.slice(0, 3)}
+                                        />
+                                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                                        {courseNames.map((course, idx) => (
+                                            <Line
+                                                key={course}
+                                                dataKey={course}
+                                                type="monotone"
+                                                stroke={colors[idx % colors.length]}
+                                                strokeWidth={2}
+                                                dot={false}
+                                            />
+                                        ))}
+                                    </LineChart>
+                                </ChartContainer>
+                            )
+
+                        )}
+                    </CardContent>
+                }
                 <CardFooter className="flex-col items-start gap-2 text-sm">
                     {selectedFilter === "total_revenue" && (<div className="flex gap-2 font-medium leading-none">
                         {trendingText} {trendingIcon}
