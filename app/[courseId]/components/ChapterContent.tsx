@@ -9,10 +9,14 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { useProgressStore } from "@/app/stores/useProgressStore";
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { Skeleton } from "@/components/ui/skeleton";
+
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+
+// Set worker URL
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.mjs`;
 
 type Attachment = {
   id: string;
@@ -40,36 +44,28 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isChapterLoading, setIsChapterLoading] = useState(true); // Loading cho toàn bộ Chapter
+  const [isChapterLoading, setIsChapterLoading] = useState(true);
   const setCompletedInStore = useProgressStore((state) => state.setCompleted);
+  const [numPages, setNumPages] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
-  
-    setIsChapterLoading(true); // Bắt đầu loading
-  
+    setIsChapterLoading(true);
     const loadData = async () => {
       const enrolled = await checkUserEnrolled(courseId, user.id);
       setIsEnrolled(enrolled);
-  
       const progress = await getChapterProgress(chapter.id, user.id);
       setIsCompleted(progress?.isCompleted ?? false);
-  
-      setIsChapterLoading(false); // Kết thúc loading sau khi fetch xong
+      setIsChapterLoading(false);
     };
-  
     loadData();
   }, [user?.id, courseId, chapter.id]);
 
-  // Hàm kiểm tra tất cả các chapter đã hoàn thành chưa
   const checkAllChaptersCompleted = async () => {
     if (!user?.id) return false;
-
     const progressList = await Promise.all(
       courseChapters.map((chap) => getChapterProgress(chap.id, user.id))
     );
-
-    // Nếu tất cả đều completed thì return true
     return progressList.every((progress) => progress?.isCompleted);
   };
 
@@ -78,23 +74,19 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
       toast.error("Please login to mark chapters as complete");
       return;
     }
-
     try {
       setIsLoading(true);
       const progress = await toggleChapterProgress(chapter.id, user.id);
       setIsCompleted(progress.isCompleted);
       setCompletedInStore(chapter.id, progress.isCompleted);
       toast.success(progress.isCompleted ? "Chapter marked as complete!" : "Chapter marked as incomplete");
-
       if (progress.isCompleted) {
         const allCompleted = await checkAllChaptersCompleted();
         if (allCompleted) {
-          // Bắn pháo hoa chúc mừng
-          function bigCelebration() {
+          const bigCelebration = () => {
             let count = 0;
             const maxCount = 6;
             const interval = 350;
-
             const timer = setInterval(() => {
               confetti({
                 particleCount: 150,
@@ -104,12 +96,9 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
                 ticks: 300
               });
               count++;
-              if (count >= maxCount) {
-                clearInterval(timer);
-              }
+              if (count >= maxCount) clearInterval(timer);
             }, interval);
-          }
-
+          };
           bigCelebration();
           toast.success("Congrats! You've finished the course!", { duration: 5000, position: "bottom-center" });
         }
@@ -122,7 +111,6 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
     }
   };
 
-  // Nếu đã mua thì mở khóa hết
   const chapterIsLocked = chapter.isLocked && !isEnrolled;
 
   if (chapterIsLocked) {
@@ -154,7 +142,7 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
       </div>
     );
   }
-  
+
   return (
     <div>
       {chapter.videoUrl && (
@@ -183,24 +171,42 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
         )}
       </div>
       <p className="text-slate-600 mt-2">{chapter.description}</p>
+
       {chapter.attachments && chapter.attachments.length > 0 && (
         <div className="mt-4">
           <h3 className="font-semibold mb-2">Attachments:</h3>
-          <ul className="space-y-2">
-            {chapter.attachments?.map((file, index) =>
-              file.url.endsWith('.pdf') ? (
-                <div key={file.id} className="mt-6 border rounded-md overflow-hidden h-[600px]">
-                  <h4 className="font-semibold m-2">{index}. {file.name}</h4>
-                  <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
-                    <Viewer fileUrl={file.url} />
-                  </Worker>
-                </div>
+          <ul className="space-y-6">
+            {chapter.attachments.map((file, index) =>
+              file.url.endsWith(".pdf") ? (
+                <li key={file.id} className="border rounded-md overflow-hidden">
+                  <div className="p-2 font-semibold">{index + 1}. {file.name}</div>
+                  <div className="h-[600px] overflow-auto border-t">
+                    <Document
+                      file={file.url}
+                      onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+                      className="p-2"
+                    >
+                      {Array.from(new Array(numPages), (_, i) => (
+                        <Page
+                          key={`page_${i + 1}`}
+                          pageNumber={i + 1}
+                          width={800}
+                        />
+                      ))}
+                    </Document>
+                  </div>
+                </li>
               ) : (
-                <p key={file.id}>
-                  <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                <li key={file.id}>
+                  <a
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
                     {file.name}
                   </a>
-                </p>
+                </li>
               )
             )}
           </ul>
