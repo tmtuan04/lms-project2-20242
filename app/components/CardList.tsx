@@ -14,6 +14,14 @@ export default function CardList({ courses, title }: CardListProps) {
     const [showAll, setShowAll] = useState(false);
     const displayCourses = showAll ? courses : courses.slice(0, 4);
 
+    const handleScroll = () => {
+        setShowAll((v) => !v);
+        window.scrollBy({
+            top: window.innerHeight * (showAll ? -0.4 : 0.4), // Cuộn xuống 50% chiều cao màn hình
+            behavior: "smooth",
+        });
+    };
+
     return (
         <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
@@ -21,7 +29,7 @@ export default function CardList({ courses, title }: CardListProps) {
                 {courses.length > 4 && (
                     <Button
                         className="flex items-center group bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-full shadow-md transition cursor-pointer"
-                        onClick={() => setShowAll((v) => !v)}
+                        onClick={handleScroll}
                     >
                         {showAll ? "Thu gọn" : "Xem tất cả"}
                         <ChevronRight className="-ml-2 group-hover:translate-x-1 transition-transform duration-300" />
