@@ -598,17 +598,23 @@ export async function getTopCompletedStudents(
         u.email,
         u."imageUrl" AS image_url,
         u."createdAt" AS joined_at,
-        COUNT(DISTINCT c.id) AS amount
-      FROM "CourseEnrollment" ce
-      JOIN "Course" c ON ce."courseId" = c.id
-      JOIN "User" u ON ce."userId" = u.id
-      LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
-      LEFT JOIN "ChapterProgress" cp 
-        ON cp."chapterId" = ch.id AND cp."userId" = ce."userId"
-      WHERE c."instructorId" = ${instructorId}
-      GROUP BY u.id, u.name, u.email, u."imageUrl"
-      HAVING COUNT(DISTINCT CASE WHEN cp."isCompleted" = true THEN ch.id END) >=
-             COUNT(DISTINCT ch.id)
+        COUNT(*) AS amount
+      FROM (
+        SELECT 
+          ce."userId" AS user_id,
+          c.id AS course_id
+        FROM "CourseEnrollment" ce
+        JOIN "Course" c ON ce."courseId" = c.id
+        LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
+        LEFT JOIN "ChapterProgress" cp 
+          ON cp."chapterId" = ch.id AND cp."userId" = ce."userId"
+        WHERE c."instructorId" = ${instructorId}
+        GROUP BY ce."userId", c.id
+        HAVING COUNT(DISTINCT CASE WHEN cp."isCompleted" = true THEN ch.id END) >= 
+               COUNT(DISTINCT ch.id)
+      ) completed
+      JOIN "User" u ON u.id = completed.user_id
+      GROUP BY u.id, u.name, u.email, u."imageUrl", u."createdAt"
       ORDER BY amount DESC
       LIMIT 5;
     `;
@@ -626,6 +632,7 @@ export async function getTopCompletedStudents(
     throw new Error("Failed to fetch top completed students");
   }
 }
+
 
 
 
