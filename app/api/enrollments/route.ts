@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// POST: Enroll in a course
 export async function POST(req: Request) {
     const { userId, courseId } = await req.json();
 

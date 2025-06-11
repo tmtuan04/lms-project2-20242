@@ -31,8 +31,7 @@ export function EnrollButton({ price, courseId }: { price: number, courseId: str
 
             if (data.success) {
                 toast.success("Đăng ký khóa học thành công!");
-                // Redirect
-                // window.location.href = `/${courseId}`;
+                window.location.href = `/${courseId}/chapters/1`;
             } else {
                 toast.error("Đăng ký thất bại: " + data.message);
             }

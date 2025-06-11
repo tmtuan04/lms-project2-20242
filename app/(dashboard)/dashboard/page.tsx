@@ -15,6 +15,12 @@ export default function DashboardPage() {
   const [userCourseCards, setUserCourseCards] = useState<UserCourseCardProps[]>([])
   // const userCourseCards = await getInitUserCourseCards(userId);
 
+  const sortedCourses = [...userCourseCards].sort((a, b) => {
+    const aPercent = a.chaptersCount === 0 ? 0 : a.completedChaptersCount / a.chaptersCount;
+    const bPercent = b.chaptersCount === 0 ? 0 : b.completedChaptersCount / b.chaptersCount;
+    return aPercent - bPercent; // sort từ thấp đến cao
+  });
+
   useEffect(() => {
     if (!user) {
       return
@@ -64,22 +70,22 @@ export default function DashboardPage() {
         <div className="flex flex-col h-full">
           {/* Summary Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-8 py-3">
-            <div className="bg-white rounded-xl p-3 border flex gap-3 items-center h-16">
+            <div className="bg-white rounded-xl p-3 border flex gap-4 items-center h-16">
               <div className="bg-blue-200 rounded-full text-blue-600 ">
                 <Clock className=" m-2 h-4 w-4 bg-blue-200 rounded-full text-blue-600 " />
               </div>
               <div>
-                <p className="font-medium">In Progress</p>
+                <p className="font-semibold">In Progress</p>
                 <p className="text-sm font-medium text-gray-400">{inProgressCourses.length} Courses</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-3 border flex flex-row gap-2 items-center h-16">
+            <div className="bg-white rounded-xl p-3 border flex flex-row gap-4 items-center h-16">
               <div className="bg-green-200 rounded-full text-green-600 ">
                 <CircleCheckBig className="m-2 h-4 w-4" />
               </div>
               <div>
-                <p className="font-medium">Completed</p>
+                <p className="font-semibold">Completed</p>
                 <p className="text-sm font-medium text-gray-400">{completedCourses.length} Courses</p>
               </div>
             </div>
@@ -88,8 +94,8 @@ export default function DashboardPage() {
           {/* Courses Section */}
           <main className="flex-1">
             <div className="flex justify-center p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {userCourseCards.map((course) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
+                {sortedCourses.map((course) => (
                   <UserCourseCard
                     key={course.id}
                     id={course.id}

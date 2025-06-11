@@ -79,12 +79,12 @@ const Footer = () => {
             <Link href="#" className="hover:underline font-semibold">
               HustLMS™
             </Link>
-            . All Rights Reserved.
+            . All Rights R eserved.
           </span>
 
           <div className="flex justify-center mt-4 sm:mt-0 space-x-5">
             <Link
-              href="#"
+              href="https://www.facebook.com/tu.tuan2004/"
               className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
               aria-label="Facebook"
             >
@@ -102,7 +102,7 @@ const Footer = () => {
               </svg>
             </Link>
             <Link
-              href="#"
+              href="https://github.com/tmtuan04/lms-project2-20242"
               className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
               aria-label="GitHub"
             >
