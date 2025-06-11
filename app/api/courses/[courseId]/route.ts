@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
         category: true,
         instructor: {
           select: {
+            id: true,
             name: true,
             imageUrl: true,
           },
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
       title: course.title ?? "",
       category: course.category?.name ?? "",
       description: course.description ?? "",
+      instructorId: course.instructor.id,
       instructor: {
         name: course.instructor.name ?? "",
         imageUrl: course.instructor.imageUrl ?? "",

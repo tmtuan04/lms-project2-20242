@@ -1,19 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { UserCourseCardProps } from "../../lib/definitions";
 import { CircleCheckBig } from "lucide-react";
 import { Progress as ProgressShadCN } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import InstructorDialog from "@/components/InstructorDialog";
+import ReviewDialog from "@/app/components/ReviewDialog";
+import { useUserStore } from "@/app/stores/useUserStore";
 
 const UserCourseCard: React.FC<UserCourseCardProps> = ({
     id,
     instructor,
+    instructorId,
     title,
     category,
     chaptersCount,
     completedChaptersCount,
     imageUrl,
 }) => {
+    const user = useUserStore((state) => state.user);
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
     const percent = Math.round((100 * completedChaptersCount) / chaptersCount);
     const isCompleted = percent === 100;
 
@@ -37,9 +44,15 @@ const UserCourseCard: React.FC<UserCourseCardProps> = ({
                 </Link>
                 <p className="text-sm text-gray-700 dark:text-gray-400">
                     {category} •{" "}
-                    <span className="font-medium hover:underline cursor-pointer">
-                        {instructor}
-                    </span>
+                    <InstructorDialog
+                        instructorId={instructorId}
+                        instructorName={instructor}
+                        triggerElement={
+                            <span className="font-medium hover:underline cursor-pointer">
+                                {instructor}
+                            </span>
+                        }
+                    />
                 </p>
                 <div className="flex items-center justify-between">
                     <span className="bg-gray-100 rounded-full px-2 py-0.5 text-xs font-semibold text-gray-500">
@@ -59,12 +72,14 @@ const UserCourseCard: React.FC<UserCourseCardProps> = ({
 
                 {isCompleted && (
                     <div className="flex flex-col gap-2 mt-2">
-                        <Link href={`/dashboard/courses/${id}/certificate`}>
-                            <Button variant="secondary" className="w-full text-sm">
-                                Rate this Course
-                            </Button>
-                        </Link>
-                        <Link href={`/dashboard/courses/${id}/feedback`}>
+                        <Button 
+                            variant="secondary" 
+                            className="w-full text-sm"
+                            onClick={() => setIsReviewOpen(true)}
+                        >
+                            Rate this Course
+                        </Button>
+                        <Link href={`/courses/${id}/certificate`}>
                             <Button variant="outline" className="w-full text-sm">
                                 View Certificate
                             </Button>
@@ -72,6 +87,15 @@ const UserCourseCard: React.FC<UserCourseCardProps> = ({
                     </div>
                 )}
             </div>
+
+            {user && (
+                <ReviewDialog
+                    courseId={id}
+                    userId={user.id}
+                    isOpen={isReviewOpen}
+                    onClose={() => setIsReviewOpen(false)}
+                />
+            )}
         </div>
     );
 };

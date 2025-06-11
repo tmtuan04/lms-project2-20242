@@ -1,16 +1,15 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, ThumbsUp, MessageCircle, Send } from "lucide-react"
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import InstructorDialog from "@/components/InstructorDialog";
+import { Review, CourseData } from "@/app/lib/definitions";
+import Link from "next/link";
+import { ArrowRight, Star, ThumbsUp, MessageCircle, Send } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { Review, CourseData } from '@/app/lib/definitions';
-import { useParams } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
-import Link from 'next/link';
-import { checkUserEnrolled } from '@/app/lib/data';
-import { useUserStore } from '@/app/stores/useUserStore';
 
 // Add type for API review data
 interface ApiReview {
@@ -21,14 +20,16 @@ interface ApiReview {
   };
   rating: number;
   comment: string;
-  createdAt: string;
+  updatedAt: string;
 }
 
 const fallbackCourse: CourseData = {
   title: 'Updating...',
   description: 'No description available for this course.',
   category: "Fullstack Web",
+  instructorId: '',
   instructor: {
+    id: '',
     name: 'Unknown instructor',
     imageUrl: '/avatar.png',
   },
@@ -46,22 +47,11 @@ const fallbackCourse: CourseData = {
 };
 
 const CourseDetailsPage = () => {
-  const user = useUserStore((s) => s.user);
   const { courseId } = useParams();
   const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [isEnrolled, setIsEnrolled] = useState(false);
   const reviewSectionRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
-
-  const checkEnrollment = useCallback(async () => {
-    try {
-      const isEnrolled = await checkUserEnrolled(courseId as string, user?.id as string);
-      setIsEnrolled(isEnrolled);
-    } catch (error) {
-      console.error("Failed to check enrollment:", error);
-    }
-  }, [courseId, user?.id]);
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -76,7 +66,7 @@ const CourseDetailsPage = () => {
           },
           rating: review.rating,
           comment: review.comment,
-          timestamp: review.createdAt,
+          timestamp: review.updatedAt,
           likes: 0,
           comments: [],
         })));
@@ -98,12 +88,13 @@ const CourseDetailsPage = () => {
           return;
         }
 
-        // Replace invalid/empty values with fallback
         const filledCourse: CourseData = {
           title: data.title || fallbackCourse.title,
           description: data.description || fallbackCourse.description,
           category: data.category || fallbackCourse.category,
+          instructorId: data.instructorId || fallbackCourse.instructorId,
           instructor: {
+            id: data.instructorId || fallbackCourse.instructorId,
             name: data.instructor?.name || fallbackCourse.instructor.name,
             imageUrl: data.instructor?.imageUrl || fallbackCourse.instructor.imageUrl,
           },
@@ -130,9 +121,8 @@ const CourseDetailsPage = () => {
     };
 
     fetchCourse();
-    checkEnrollment();
     fetchReviews();
-  }, [courseId, checkEnrollment, fetchReviews]);
+  }, [courseId, fetchReviews]);
 
   const [newComment, setNewComment] = useState('');
   const [activeReview, setActiveReview] = useState<number | null>(null);
@@ -171,7 +161,7 @@ const CourseDetailsPage = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
+    return new Date(dateString).toLocaleDateString('en-EN', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -311,9 +301,15 @@ const CourseDetailsPage = () => {
             <div className="flex flex-col md:flex-row md:items-center md:gap-4">
               <span className="text-sm font-semibold text-gray-800">
                 Instructor:{' '}
-                <a href="#" className="underline">
-                  {courseData?.instructor?.name ?? fallbackCourse.instructor.name}
-                </a>
+                <InstructorDialog
+                  instructorId={courseData?.instructorId ?? fallbackCourse.instructorId}
+                  instructorName={courseData?.instructor.name ?? fallbackCourse.instructor.name}
+                  triggerElement={
+                    <span className="hover:underline cursor-pointer">
+                      {courseData?.instructor.name ?? fallbackCourse.instructor.name}
+                    </span>
+                  }
+                />
               </span>
               <span className="text-sm text-gray-600 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -363,36 +359,15 @@ const CourseDetailsPage = () => {
       {/* Navigation Buttons */}
       <div className="flex justify-center space-x-6">
         <Link href={`/`}><Button variant="outline" className="px-10 py-3">Back</Button></Link>
-        {isEnrolled ? (
-          <Link href={`/${courseId}/chapters/1`}><Button variant="outline" className="px-10 py-3">Continue Learning <ArrowRight /></Button></Link>
-        ) : (
-          <Button 
-            variant="outline" 
-            className="px-10 py-3"
-            onClick={async () => {
-              try {
-                const res = await fetch('/api/enrollments', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    userId: 1, // TODO: Get actual user ID
-                    courseId,
-                  }),
-                });
-                const data = await res.json();
-                if (data.success) {
-                  setIsEnrolled(true);
-                }
-              } catch (error) {
-                console.error("Failed to enroll:", error);
-              }
-            }}
+        <div className="flex flex-col gap-4">
+          <Link
+            href={`/${courseId}/chapters/1`}
+            className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-2 focus:ring-blue-300"
           >
-            Enroll Now
-          </Button>
-        )}
+            Start Learning
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Link>
+        </div>
       </div>
 
       {/* Reviews Section */}

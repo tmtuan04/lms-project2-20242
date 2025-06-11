@@ -3,7 +3,8 @@
 
 // Interface cho Course Previews
 
-interface Instructor {
+export interface Instructor {
+  id: string;
   name: string;
   imageUrl: string;
 }
@@ -12,6 +13,7 @@ export interface CourseData {
   title: string;
   description: string;
   category: string;
+  instructorId: string;
   instructor: Instructor;
   enrolled: string; // Số người đăng ký
   chapters: string; // Số chapters
@@ -270,6 +272,7 @@ export interface CourseTableDataBasic {
 export interface UserCourseCardProps {
   id: string;
   instructor: string;
+  instructorId: string;
   title: string;
   category: string;
   chaptersCount: number;

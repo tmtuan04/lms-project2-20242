@@ -837,22 +837,23 @@ export async function checkUserCourseAccess(
   }
 }
 
-// Thêm type definition cho instructor details
-export type InstructorDetails = {
+export interface Course {
+  id: string;
+  title: string;
+  imageUrl: string;
+  price: number;
+  enrolledCount: number;
+}
+
+export interface InstructorDetails {
   id: string;
   name: string;
   email: string;
-  imageUrl: string | null;
+  imageUrl?: string;
   totalCourses: number;
   totalStudents: number;
-  featuredCourses: {
-    id: string;
-    title: string;
-    imageUrl: string | null;
-    price: number;
-    enrolledCount: number;
-  }[];
-};
+  featuredCourses: Course[];
+}
 
 // Fetch instructor details by ID
 export async function getInstructorDetails(instructorId: string): Promise<InstructorDetails> {
@@ -912,10 +913,12 @@ export async function getInstructorDetails(instructorId: string): Promise<Instru
 
     return {
       ...instructorData[0],
+      imageUrl: instructorData[0].imageUrl || "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg",
       totalCourses: Number(coursesCount[0].count),
       totalStudents: Number(studentsCount[0].count),
       featuredCourses: featuredCourses.map(course => ({
         ...course,
+        imageUrl: course.imageUrl || "https://img.freepik.com/premium-vector/print_1126632-1359.jpg",
         price: Number(course.price) || 0,
         enrolledCount: Number(course.enrolledCount)
       }))
