@@ -106,6 +106,7 @@ export default function DashboardPage() {
                       key={course.id}
                       id={course.id}
                       instructor={course.instructor}
+                      instructorId={course.instructorId}
                       imageUrl={course.imageUrl}
                       title={course.title}
                       category={course.category}

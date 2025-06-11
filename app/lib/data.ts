@@ -418,6 +418,7 @@ export async function getInitUserCourseCards(
         c.id AS id,
         c.title,
         u.name AS instructor,
+        u.id AS "instructorId",
         cat.name AS category,
         c."imageUrl" AS "imageUrl",
         COUNT(DISTINCT ch.id) AS "chaptersCount",
@@ -431,12 +432,13 @@ export async function getInitUserCourseCards(
       LEFT JOIN "Chapter" ch ON ch."courseId" = c.id
       LEFT JOIN "ChapterProgress" cp ON cp."chapterId" = ch.id AND cp."userId" = ce."userId"
       WHERE ce."userId" = ${userId}
-      GROUP BY c.id, c.title, u.name, cat.name, c."imageUrl";
+      GROUP BY c.id, c.title, u.name, u.id, cat.name, c."imageUrl";
         `;
     return data.map(
       (row: {
         id: string;
         instructor: string;
+        instructorId: string;
         title: string;
         category: string;
         chaptersCount: number;
@@ -445,6 +447,7 @@ export async function getInitUserCourseCards(
       }) => ({
         id: row.id,
         instructor: row.instructor || "Unknown Instructor",
+        instructorId: row.instructorId,
         title: row.title || "Untitled Course",
         category: row.category || "Unknown Category",
         chaptersCount: row.chaptersCount || 0,
