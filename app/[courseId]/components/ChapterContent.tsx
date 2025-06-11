@@ -10,7 +10,16 @@ import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { useProgressStore } from "@/app/stores/useProgressStore";
 import { Skeleton } from "@/components/ui/skeleton";
-// import Image from "next/image";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
@@ -50,6 +59,12 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
   const [numPages, setNumPages] = useState<number | null>(null);
   const [isEnrolledLoading, setIsEnrolledLoading] = useState(true);
 
+  // Review
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [rating, setRating] = useState("5");
+  const [comment, setComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
   useEffect(() => {
     if (!user?.id) return;
     setIsChapterLoading(true);
@@ -86,6 +101,8 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
       if (progress.isCompleted) {
         const allCompleted = await checkAllChaptersCompleted();
         if (allCompleted) {
+
+          // Bắn pháo hoa + Modal Review
           const bigCelebration = () => {
             let count = 0;
             const maxCount = 6;
@@ -99,7 +116,13 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
                 ticks: 300
               });
               count++;
-              if (count >= maxCount) clearInterval(timer);
+              if (count >= maxCount) {
+                clearInterval(timer);
+                // Mở modal sau khi pháo hoa xong
+                setTimeout(() => {
+                  setShowReviewModal(true);
+                }, 1500);
+              }
             }, interval);
           };
           bigCelebration();
@@ -213,6 +236,66 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
           </ul>
         </div>
       )}
+      <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Course Feedback</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <RadioGroup value={rating} onValueChange={setRating} className="flex gap-4">
+              {["1", "2", "3", "4", "5"].map((val) => (
+                <div key={val} className="flex items-center space-x-2">
+                  <RadioGroupItem value={val} id={`rating-${val}`} />
+                  <label htmlFor={`rating-${val}`}>{val} star{val !== "1" ? "s" : ""}</label>
+                </div>
+              ))}
+            </RadioGroup>
+            <Textarea
+              placeholder="Write your feedback here..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+            variant="outline"
+              onClick={async () => {
+                if (!user?.id) return;
+                try {
+                  setIsSubmittingReview(true);
+                  const res = await fetch("/api/reviews", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      userId: user.id,
+                      courseId,
+                      rating: parseInt(rating),
+                      comment,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    toast.success("Thank you for your feedback!");
+                    setShowReviewModal(false);
+                    setRating("5");
+                    setComment("");
+                  } else {
+                    toast.error(data.message || "Failed to submit review.");
+                  }
+                } catch (err) {
+                  console.error(err);
+                  toast.error("Error while submitting review");
+                } finally {
+                  setIsSubmittingReview(false);
+                }
+              }}
+              disabled={isSubmittingReview}
+            >
+              Submit Review
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

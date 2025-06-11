@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star, ThumbsUp, MessageCircle, Send } from "lucide-react"
@@ -9,6 +9,20 @@ import { Review, CourseData } from '@/app/lib/definitions';
 import { useParams } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from 'next/link';
+import { checkUserEnrolled } from '@/app/lib/data';
+import { useUserStore } from '@/app/stores/useUserStore';
+
+// Add type for API review data
+interface ApiReview {
+  id: number;
+  user: {
+    name: string;
+    imageUrl: string | null;
+  };
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
 
 const fallbackCourse: CourseData = {
   title: 'Updating...',
@@ -32,78 +46,45 @@ const fallbackCourse: CourseData = {
 };
 
 const CourseDetailsPage = () => {
+  const user = useUserStore((s) => s.user);
   const { courseId } = useParams();
   const [courseData, setCourseData] = useState<CourseData | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: 1,
-      user: {
-        name: 'John Doe',
-        imageUrl: '/avatar.png',
-      },
-      rating: 5,
-      comment: 'This course is excellent! The instructor explains everything clearly and the content is well-structured. Highly recommended for beginners.',
-      timestamp: '2024-03-15T10:30:00',
-      likes: 12,
-      comments: [
-        {
-          id: 1,
-          user: {
-            name: 'Jane Smith',
-            imageUrl: '/avatar.png',
-          },
-          comment: 'I agree! The practical exercises are really helpful.',
-          timestamp: '2024-03-15T11:00:00'
-        }
-      ]
-    },
-    {
-      id: 2,
-      user: {
-        name: 'Alice Johnson',
-        imageUrl: '/avatar.png',
-      },
-      rating: 4,
-      comment: 'Great course material and good pace. The only suggestion would be to add more advanced topics.',
-      timestamp: '2024-03-14T15:45:00',
-      likes: 8,
-      comments: []
-    },
-    {
-      id: 3,
-      user: {
-        name: 'Mike Wilson',
-        imageUrl: '/avatar.png',
-      },
-      rating: 5,
-      comment: 'The best course I\'ve taken so far. The instructor is very knowledgeable and responsive to questions.',
-      timestamp: '2024-03-13T09:20:00',
-      likes: 15,
-      comments: [
-        {
-          id: 2,
-          user: {
-            name: 'Sarah Brown',
-            imageUrl: '/avatar.png',
-          },
-          comment: 'Couldn\'t agree more! The community support is amazing too.',
-          timestamp: '2024-03-13T10:15:00'
-        },
-        {
-          id: 3,
-          user: {
-            name: 'David Lee',
-            imageUrl: '/avatar.png',
-          },
-          comment: 'The practice projects are really well designed.',
-          timestamp: '2024-03-13T11:30:00'
-        }
-      ]
-    }
-  ]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isEnrolled, setIsEnrolled] = useState(false);
   const reviewSectionRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
 
+  const checkEnrollment = useCallback(async () => {
+    try {
+      const isEnrolled = await checkUserEnrolled(courseId as string, user?.id as string);
+      setIsEnrolled(isEnrolled);
+    } catch (error) {
+      console.error("Failed to check enrollment:", error);
+    }
+  }, [courseId, user?.id]);
+
+  const fetchReviews = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/reviews?courseId=${courseId}`);
+      const data = await res.json();
+      if (data.success) {
+        setReviews(data.reviews.map((review: ApiReview) => ({
+          id: review.id,
+          user: {
+            name: review.user.name,
+            imageUrl: review.user.imageUrl || '/avatar.png',
+          },
+          rating: review.rating,
+          comment: review.comment,
+          timestamp: review.createdAt,
+          likes: 0,
+          comments: [],
+        })));
+      }
+    } catch (error) {
+      console.error("Failed to fetch reviews:", error);
+    }
+  }, [courseId]);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -111,9 +92,6 @@ const CourseDetailsPage = () => {
       try {
         const res = await fetch(`/api/courses/${courseId}`);
         const data = await res.json();
-
-        // Log
-        console.log("Data:", data);
 
         if (!res.ok || !data || typeof data !== 'object') {
           setCourseData(fallbackCourse);
@@ -152,7 +130,9 @@ const CourseDetailsPage = () => {
     };
 
     fetchCourse();
-  }, [courseId, reviews]);
+    checkEnrollment();
+    fetchReviews();
+  }, [courseId, checkEnrollment, fetchReviews]);
 
   const [newComment, setNewComment] = useState('');
   const [activeReview, setActiveReview] = useState<number | null>(null);
@@ -383,7 +363,36 @@ const CourseDetailsPage = () => {
       {/* Navigation Buttons */}
       <div className="flex justify-center space-x-6">
         <Link href={`/`}><Button variant="outline" className="px-10 py-3">Back</Button></Link>
-        <Link href={`/${courseId}/chapters/1`}><Button variant="outline" className="px-10 py-3">Course Details <ArrowRight /></Button></Link>
+        {isEnrolled ? (
+          <Link href={`/${courseId}/chapters/1`}><Button variant="outline" className="px-10 py-3">Continue Learning <ArrowRight /></Button></Link>
+        ) : (
+          <Button 
+            variant="outline" 
+            className="px-10 py-3"
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/enrollments', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    userId: 1, // TODO: Get actual user ID
+                    courseId,
+                  }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                  setIsEnrolled(true);
+                }
+              } catch (error) {
+                console.error("Failed to enroll:", error);
+              }
+            }}
+          >
+            Enroll Now
+          </Button>
+        )}
       </div>
 
       {/* Reviews Section */}
