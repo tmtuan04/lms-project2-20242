@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import cloudinary from "@/app/lib/cloudinary";
 
 // Tăng timeout limit cho API route
-export const maxDuration = 10; // Limit từ Vercer
+export const maxDuration = 10; // Limit từ Vercel
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {

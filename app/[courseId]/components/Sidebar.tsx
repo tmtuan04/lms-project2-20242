@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { useState, useEffect } from "react";
 import { useUserStore } from "@/app/stores/useUserStore";
 import { useProgressStore } from "@/app/stores/useProgressStore";
+import { toast } from "react-hot-toast"
 
 interface SidebarProps {
   courseId: string;
@@ -24,6 +25,7 @@ export default function Sidebar({ courseId, chapters }: SidebarProps) {
   const [openChapterId, setOpenChapterId] = useState<string | null>(null);
   const completedChapters = useProgressStore((state) => state.completedMap);
   const setManyCompleted = useProgressStore((state) => state.setManyCompleted);
+  const [previousPath, setPreviousPath] = useState<string | null>(null);
 
   const toggleOpen = (id: string) => {
     setOpenChapterId((prev) => (prev === id ? null : id));
@@ -56,6 +58,13 @@ export default function Sidebar({ courseId, chapters }: SidebarProps) {
 
     fetchProgress();
   }, [chapters, user?.id, setManyCompleted]);
+
+  useEffect(() => {
+    if (previousPath && previousPath !== pathname) {
+      toast.success("Moved to new chapter!");
+    }
+    setPreviousPath(pathname);
+  }, [pathname, previousPath]);
 
   return (
     <div className="flex flex-col w-full overflow-y-auto">

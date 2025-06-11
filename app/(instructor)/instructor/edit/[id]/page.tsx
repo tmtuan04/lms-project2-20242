@@ -18,11 +18,11 @@ import {
 } from "@/components/ui/select";
 import { useEditCourseStore } from "@/app/stores/editCourseStore";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getCourseByID, fetchCategories } from "@/app/lib/data";
 import { Category } from "@/app/lib/definitions";
 
-import { updateCourse } from "@/app/lib/actions/coursesActions";
+import { updateCourse, publishCourse } from "@/app/lib/actions/coursesActions";
 import { useUserStore } from "@/app/stores/useUserStore";
 import { toast } from "react-hot-toast";
 
@@ -32,6 +32,7 @@ export default function EditCoursePage() {
     const user = useUserStore((s) => s.user)
     const resetStore = useEditCourseStore((s) => s.resetStore);
     const params = useParams();
+    const router = useRouter();
 
     // Get state and actions from store
     const {
@@ -238,6 +239,23 @@ export default function EditCoursePage() {
         }
     };
 
+    const handlePublish = async () => {
+        try {
+            await toast.promise(
+                publishCourse({ courseId: params.id as string }),
+                {
+                    loading: "Publishing course...",
+                    success: "Course published successfully!",
+                    error: "Failed to publish course.",
+                }
+            );
+            setIsPublished(true); // Update state after successful publish
+            router.refresh(); // Still refresh server components
+        } catch (error) {
+            console.error("Error publishing course:", error);
+        }
+    };
+
     const handleUpdate = async () => {
         try {
             setIsUpdating(true);
@@ -305,8 +323,17 @@ export default function EditCoursePage() {
         // Div này để responsive
         <div>
             {!isPublished && (
-                <div className="bg-yellow-100 p-4 text-sm text-yellow-700">
-                    This course is <span className="font-bold">unpublished</span>. It will not be visible to students.
+                <div className="flex bg-yellow-100 p-4 text-sm text-yellow-700 justify-between items-center">
+                    <span>
+                        This course is <span className="font-bold">unpublished</span>. It will not be visible to students.
+                    </span>
+                    <Button
+                        className="text-black"
+                        onClick={handlePublish}
+                        variant="outline"
+                    >
+                        Publish Course
+                    </Button>
                 </div>
             )}
 
