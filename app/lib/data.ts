@@ -674,7 +674,7 @@ export const fetchCourses = async (query?: string) => {
         c."courseUrl", 
         c.title, 
         cat.name AS category, 
-        COUNT(ch.id) as "chaptersCount",
+        COUNT(DISTINCT ch.id) as "chaptersCount",
         c.price, 
         c."imageUrl", 
         u.name as instructor,
