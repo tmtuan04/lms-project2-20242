@@ -4,6 +4,7 @@ import Card from "./Card";
 import { CourseCardProps } from "@/app/lib/definitions";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import { useEffect } from "react";
 
 interface CardListProps {
     courses: CourseCardProps[];
@@ -16,11 +17,14 @@ export default function CardList({ courses, title }: CardListProps) {
 
     const handleScroll = () => {
         setShowAll((v) => !v);
+    };
+
+    useEffect(() => {
         window.scrollBy({
-            top: window.innerHeight * (showAll ? -0.4 : 0.4), // Cuộn xuống 50% chiều cao màn hình
+            top: window.innerHeight * (showAll ? 0.4 : -0.4),
             behavior: "smooth",
         });
-    };
+    }, [showAll]);
 
     return (
         <div className="mb-8">
