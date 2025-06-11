@@ -35,7 +35,7 @@ export default function CardList({ courses, title }: CardListProps) {
                         className="flex items-center group bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-full shadow-md transition cursor-pointer"
                         onClick={handleScroll}
                     >
-                        {showAll ? "Thu gọn" : "Xem tất cả"}
+                        {showAll ? "Collapse" : "View All"}
                         <ChevronRight className="-ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                     </Button>
                 )}
