@@ -522,10 +522,10 @@ export async function getTopEnrolledCustomers(instructorId: string): Promise<Cus
       }[]
     >`
       SELECT u.id, u.name, u.email, u."imageUrl" AS image_url, COUNT(*) AS enroll_count, u."createdAt" AS joined_at
-      FROM "Payment" p
-      JOIN "User" u ON p."userId" = u.id
-      JOIN "Course" c ON p."courseId" = c.id
-      WHERE p."status" = 'SUCCESS' AND c."instructorId" = ${instructorId}
+      FROM "CourseEnrollment" ce
+      JOIN "User" u ON ce."userId" = u.id
+      JOIN "Course" c ON ce."courseId" = c.id
+      WHERE c."instructorId" = ${instructorId}
       GROUP BY u.id, u.name, u.email, u."imageUrl"
       ORDER BY enroll_count DESC
       LIMIT 5

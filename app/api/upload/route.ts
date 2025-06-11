@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
       // Sử dụng upload_large cho file lớn
       const uploadMethod = isLargeFile ? cloudinary.uploader.upload_large : cloudinary.uploader.upload;
-      
+
       uploadMethod(
         dataURI,
         uploadOptions,

@@ -1,5 +1,5 @@
 'use client';
-import { RefreshCw, BookOpen, Sparkles } from 'lucide-react';
+import { RefreshCw, BookOpen, Sparkles, UserX } from 'lucide-react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import { Customer, CourseInfo } from '@/app/lib/definitions';
@@ -128,42 +128,51 @@ export default function RecentCustomers() {
                     </Select>
                 </div>
                 <div className="bg-white px-6 ">
-                    {customers.map((invoice: Customer, i) => {
-                        return (
-                            <div
-                                key={`${invoice.id}-${i}`}
-                                className={clsx(
-                                    'flex flex-col',
-                                    { 'border-t': i !== 0 }
-                                )}
-                            >
-                                <div className='flex py-1 text-gray-700 text-sm font-medium items-center'>{invoice.course_title}</div>
-                                <div className='flex flex-row items-center justify-between pb-4 cursor-pointer hover:bg-gray-100 rounded'
-                                    onClick={() => handleCustomerClick(invoice)}>
-                                    <div className="flex items-center">
-                                        <Image
-                                            src={invoice.image_url}
-                                            alt={`${invoice.name}'s profile picture`}
-                                            className="mr-4 rounded-full"
-                                            width={32}
-                                            height={32}
-                                        />
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-semibold md:text-base">
-                                                {invoice.name}
-                                            </p>
-                                            <p className="hidden text-sm text-gray-500 sm:block">
-                                                {invoice.email}
-                                            </p>
+                    {customers.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-2 py-10">
+                            <UserX className="h-10 w-10 text-gray-400" />
+                            <p className="text-sm font-medium text-gray-600">Chưa có dữ liệu.</p>
+                            <p className="text-xs text-gray-400 text-center max-w-sm">
+                                Hiện tại chưa có dữ liệu của các khóa học theo bộ lọc này. Hãy thử chọn bộ lọc khác hoặc quay lại sau.
+                            </p>
+                        </div>
+                    ) : (
+                        customers.map((invoice: Customer, i) => {
+                            return (
+                                <div
+                                    key={`${invoice.id}-${i}`}
+                                    className={clsx(
+                                        'flex flex-col',
+                                        { 'border-t': i !== 0 }
+                                    )}
+                                >
+                                    <div className='flex py-1 text-gray-700 text-sm font-medium items-center'>{invoice.course_title}</div>
+                                    <div className='flex flex-row items-center justify-between pb-4 cursor-pointer hover:bg-gray-100 rounded'
+                                        onClick={() => handleCustomerClick(invoice)}>
+                                        <div className="flex items-center">
+                                            <Image
+                                                src={invoice.image_url}
+                                                alt={`${invoice.name}'s profile picture`}
+                                                className="mr-4 rounded-full"
+                                                width={32}
+                                                height={32}
+                                            />
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-semibold md:text-base">
+                                                    {invoice.name}
+                                                </p>
+                                                <p className="hidden text-sm text-gray-500 sm:block">
+                                                    {invoice.email}
+                                                </p>
+                                            </div>
                                         </div>
+
+                                        {renderAmount(invoice)}
+
                                     </div>
-
-                                    {renderAmount(invoice)}
-
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        }))}
                 </div>
                 {showModal && selectedCustomer && (
                     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
