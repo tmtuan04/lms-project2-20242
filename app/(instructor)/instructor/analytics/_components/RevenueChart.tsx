@@ -125,9 +125,9 @@ export default function RevenueChart() {
                     <CardContent>
                         <div className="flex flex-col items-center justify-center gap-4">
                             <AlertCircle className="w-12 h-12 text-gray-400" />
-                            <h2 className="text-lg font-semibold text-gray-700">Chưa có doanh thu</h2>
+                            <h2 className="text-lg font-semibold text-gray-700">No revenue yet</h2>
                             <p className="text-sm text-gray-500 max-w-xs">
-                                Hiện tại bạn chưa có doanh thu nào từ các khóa học trong năm nay. Hãy chia sẻ và quảng bá để có những lượt mua đầu tiên!
+                                You currently have no revenue from your courses this year. Share and promote your courses to get your first sales!
                             </p>
                         </div>
                     </CardContent> :

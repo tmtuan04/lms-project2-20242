@@ -131,9 +131,9 @@ export default function RecentCustomers() {
                     {customers.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-2 py-10">
                             <UserX className="h-10 w-10 text-gray-400" />
-                            <p className="text-sm font-medium text-gray-600">Chưa có dữ liệu.</p>
+                            <p className="text-sm font-medium text-gray-600">No data available.</p>
                             <p className="text-xs text-gray-400 text-center max-w-sm">
-                                Hiện tại chưa có dữ liệu của các khóa học theo bộ lọc này. Hãy thử chọn bộ lọc khác hoặc quay lại sau.
+                                There is currently no data for courses with this filter. Try selecting another filter or come back later.
                             </p>
                         </div>
                     ) : (
