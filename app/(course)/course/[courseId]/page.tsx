@@ -201,7 +201,7 @@ const CourseDetailsPage = () => {
   };
 
   const formatCourseDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
+    return new Date(dateString).toLocaleDateString('en-EN', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'

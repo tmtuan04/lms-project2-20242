@@ -100,14 +100,14 @@ export async function updateCourse({
   // Xóa tất cả chapters cũ
   await prisma.chapter.deleteMany({
     where: {
-      courseId: courseId
-    }
+      courseId: courseId,
+    },
   });
 
   // Cập nhật course và tạo chapters mới
   const course = await prisma.course.update({
     where: {
-      id: courseId
+      id: courseId,
     },
     data: {
       title,
@@ -125,6 +125,24 @@ export async function updateCourse({
     },
     include: {
       chapters: true,
+    },
+  });
+
+  return course;
+}
+
+export async function publishCourse({ courseId }: { courseId: string }) {
+  if (!courseId) {
+    throw new Error("Missing courseId");
+  }
+
+  // Cập nhật trạng thái isPublished thành true
+  const course = await prisma.course.update({
+    where: {
+      id: courseId,
+    },
+    data: {
+      isPublished: true,
     },
   });
 

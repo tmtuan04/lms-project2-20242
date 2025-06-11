@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { useProgressStore } from "@/app/stores/useProgressStore";
 import { Skeleton } from "@/components/ui/skeleton";
+// import Image from "next/image";
 
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
@@ -47,6 +48,7 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
   const [isChapterLoading, setIsChapterLoading] = useState(true);
   const setCompletedInStore = useProgressStore((state) => state.setCompleted);
   const [numPages, setNumPages] = useState<number | null>(null);
+  const [isEnrolledLoading, setIsEnrolledLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -57,6 +59,7 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
       const progress = await getChapterProgress(chapter.id, user.id);
       setIsCompleted(progress?.isCompleted ?? false);
       setIsChapterLoading(false);
+      setIsEnrolledLoading(false);
     };
     loadData();
   }, [user?.id, courseId, chapter.id]);
@@ -111,17 +114,7 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
     }
   };
 
-  const chapterIsLocked = chapter.isLocked && !isEnrolled;
-
-  if (chapterIsLocked) {
-    return (
-      <div className="aspect-video bg-slate-200 flex justify-center items-center rounded-md">
-        <p className="text-slate-600 font-bold">This chapter is locked.</p>
-      </div>
-    );
-  }
-
-  if (isChapterLoading) {
+  if (isEnrolledLoading || isChapterLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="aspect-video w-full rounded-md" />
@@ -132,19 +125,22 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-5/6" />
         <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-4 w-3/4" />
-        <div className="mt-4 space-y-2">
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
-        </div>
+      </div>
+    );
+  }
+
+  const chapterIsLocked = !isEnrolledLoading && chapter.isLocked && !isEnrolled;
+
+  if (chapterIsLocked) {
+    return (
+      <div className="bg-yellow-100 p-4 text-sm text-yellow-700">
+        This chapter is <span className="font-bold">locked</span>. Please enroll the course to continue learning.
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="p-6 max-w-5xl mx-auto">
       {chapter.videoUrl && (
         <div className="aspect-video">
           <video
@@ -184,15 +180,20 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
                     <Document
                       file={file.url}
                       onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+                      onLoadError={(err) => {
+                        console.error("Failed to load PDF:", err);
+                        toast.error("Không thể tải file PDF");
+                      }}
                       className="p-2"
                     >
-                      {Array.from(new Array(numPages), (_, i) => (
-                        <Page
-                          key={`page_${i + 1}`}
-                          pageNumber={i + 1}
-                          width={800}
-                        />
-                      ))}
+                      {numPages &&
+                        Array.from({ length: numPages }, (_, i) => (
+                          <Page
+                            key={`page_${i + 1}`}
+                            pageNumber={i + 1}
+                            width={800}
+                          />
+                        ))}
                     </Document>
                   </div>
                 </li>
