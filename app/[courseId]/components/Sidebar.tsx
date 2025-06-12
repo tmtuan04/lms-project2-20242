@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { useState, useEffect } from "react";
 import { useUserStore } from "@/app/stores/useUserStore";
 import { useProgressStore } from "@/app/stores/useProgressStore";
+import { checkUserEnrolled } from "@/app/lib/data";
 import { toast } from "react-hot-toast"
 
 interface SidebarProps {
@@ -20,12 +21,29 @@ interface SidebarProps {
 
 export default function Sidebar({ courseId, chapters }: SidebarProps) {
   const user = useUserStore((s) => s.user);
+  const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
 
   const pathname = usePathname();
   const [openChapterId, setOpenChapterId] = useState<string | null>(null);
   const completedChapters = useProgressStore((state) => state.completedMap);
   const setManyCompleted = useProgressStore((state) => state.setManyCompleted);
   const [previousPath, setPreviousPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkEnrollment = async () => {
+      if (user?.id) {
+        try {
+          const enrolled = await checkUserEnrolled(courseId, user.id);
+          setIsEnrolled(enrolled);
+        } catch (error) {
+          console.error("Error checking enrollment:", error);
+          setIsEnrolled(false);
+        }
+      }
+    };
+
+    checkEnrollment();
+  }, [courseId, user?.id]);
 
   const toggleOpen = (id: string) => {
     setOpenChapterId((prev) => (prev === id ? null : id));
@@ -92,15 +110,15 @@ export default function Sidebar({ courseId, chapters }: SidebarProps) {
               >
                 {isCompleted ? (
                   <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                ) : isFirstChapter ? (
-                  <Compass className={clsx("h-4 w-4 flex-shrink-0 ", isActive && "text-[#255C6E]")} />
-                ) : (
+                ) : !isEnrolled && index > 0 ? (
                   <Lock className={clsx("h-4 w-4 flex-shrink-0 ", isActive && "text-[#255C6E]")} />
+                ) : (
+                  <Compass className={clsx("h-4 w-4 flex-shrink-0 ", isActive && "text-[#255C6E]")} />
                 )}
                 {index}. {chapter.title}
               </Link>
 
-              {Array.isArray(chapter.attachments) && chapter.attachments.length > 0 && (
+              {Array.isArray(chapter.attachments) && chapter.attachments.length > 0 && (isFirstChapter || isEnrolled) && (
                 <button
                   onClick={() => toggleOpen(chapter.id)}
                   className="flex items-center gap-x-1 text-xs text-gray-500 hover:text-gray-700"
@@ -114,7 +132,7 @@ export default function Sidebar({ courseId, chapters }: SidebarProps) {
               )}
             </div>
 
-            {isOpen && Array.isArray(chapter.attachments) && chapter.attachments.length > 0 && (
+            {isOpen && Array.isArray(chapter.attachments) && chapter.attachments.length > 0 && (isFirstChapter || isEnrolled) && (
               <div className="flex flex-col">
                 {chapter.attachments.map((attachment, index) => (
                   <Link

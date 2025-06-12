@@ -66,18 +66,36 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
-    if (!user?.id) return;
-    setIsChapterLoading(true);
     const loadData = async () => {
+      if (!user?.id) {
+        setIsChapterLoading(false);
+        setIsEnrolledLoading(false);
+        return;
+      }
+
+      setIsChapterLoading(true);
+      setIsEnrolledLoading(true);
+
       const enrolled = await checkUserEnrolled(courseId, user.id);
       setIsEnrolled(enrolled);
+
       const progress = await getChapterProgress(chapter.id, user.id);
       setIsCompleted(progress?.isCompleted ?? false);
+
       setIsChapterLoading(false);
       setIsEnrolledLoading(false);
     };
+
     loadData();
   }, [user?.id, courseId, chapter.id]);
+
+  if (!user?.id) {
+    return (
+      <div className="bg-blue-100 p-4 text-sm text-blue-700">
+        Please <span className="font-bold">log in</span> to view this content.
+      </div>
+    );
+  }
 
   const checkAllChaptersCompleted = async () => {
     if (!user?.id) return false;
@@ -258,7 +276,7 @@ export default function ChapterContent({ chapter, courseId, courseChapters }: Ch
           </div>
           <DialogFooter>
             <Button
-            variant="outline"
+              variant="outline"
               onClick={async () => {
                 if (!user?.id) return;
                 try {
