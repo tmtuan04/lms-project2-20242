@@ -44,3 +44,5 @@ next-env.d.ts
 note.md
 zustand.md
 clerk.md
+
+.dockerignore
