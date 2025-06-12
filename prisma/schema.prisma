@@ -181,9 +181,3 @@ model CourseReview {
   @@index([courseId])
   @@index([userId])
 }
-
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./erd/diagram.jpg"
-  format   = "jpg"
-}
