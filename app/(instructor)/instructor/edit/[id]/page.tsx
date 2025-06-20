@@ -619,6 +619,7 @@ export default function EditCoursePage() {
                             <Input
                                 className={`w-30 ${priceConfirmed ? "font-medium" : ""}`}
                                 value={price}
+                                min={0}
                                 onChange={e => setPrice(e.target.value)}
                                 placeholder="e.g. 200,000"
                             />
